@@ -37,6 +37,12 @@ Next, we need to annotate the service verticle as follows:
 )
 ```
 
+**Note:**
+> EventBus topics should follow package naming conventions
+to avoid errors.
+
+---
+
 This will generate two things
 * An extension function to request divisions:
 ```kotlin
