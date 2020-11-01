@@ -3,6 +3,7 @@ package co.selim.ebservice
 import co.selim.ebservice.annotation.EventBusService
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import javax.annotation.processing.*
 import javax.lang.model.SourceVersion
@@ -24,10 +25,7 @@ class ServiceProcessor : AbstractProcessor() {
 
     typeElements.forEach { typeElement ->
       typeElement.getAnnotation(EventBusService::class.java)?.let { service ->
-        val sourceFilePath = Paths.get(processingEnv.options["kapt.kotlin.generated"]!!)
-          .resolve(service.topic.replace(".", File.separator))
-          .resolve("Service.kt")
-        Files.deleteIfExists(sourceFilePath)
+        val sourceFilePath = getSourceFilePath(service)
         Files.createDirectories(sourceFilePath.parent)
 
         val consumedType = service.extractConsumedType()
@@ -48,20 +46,26 @@ class ServiceProcessor : AbstractProcessor() {
     return true
   }
 
-  private fun EventBusService.extractConsumedType(): Pair<String, String> {
-    return extractClass { consumes.java.simpleName to consumes.java.name }
+  private fun getSourceFilePath(service: EventBusService): Path {
+    return Paths.get(processingEnv.options["kapt.kotlin.generated"]!!)
+      .resolve(service.topic.replace(".", File.separator))
+      .resolve("ServiceExtensions.kt")
   }
 
-  private fun EventBusService.extractProducedType(): Pair<String, String> {
-    return extractClass { produces.java.simpleName to produces.java.name }
+  private fun EventBusService.extractConsumedType(): ClassName {
+    return extractClass { ClassName(consumes.java.simpleName, consumes.java.name) }
   }
 
-  private fun extractClass(block: () -> Pair<String, String>): Pair<String, String> {
+  private fun EventBusService.extractProducedType(): ClassName {
+    return extractClass { ClassName(produces.java.simpleName, produces.java.name) }
+  }
+
+  private fun extractClass(block: () -> ClassName): ClassName {
     return try {
       block()
     } catch (e: MirroredTypeException) {
       val typeElement = processingEnv.typeUtils.asElement(e.typeMirror) as TypeElement
-      typeElement.simpleName.toString() to typeElement.qualifiedName.toString()
+      ClassName(typeElement.simpleName.toString(), typeElement.qualifiedName.toString())
     }
   }
 
@@ -71,17 +75,22 @@ class ServiceProcessor : AbstractProcessor() {
 
   private fun generateServiceExtensions(
     topic: String,
-    consumedType: Pair<String, String>,
-    producedType: Pair<String, String>,
+    consumedType: ClassName,
+    producedType: ClassName,
     propertyName: String,
     functionName: String
   ): String {
     return buildString {
-      appendLine(generateHeader(topic, consumedType.second, producedType.second))
+      appendLine(generateHeader(topic, consumedType.qualifiedName, producedType.qualifiedName))
       appendLine()
-      appendLine(generateRequestsProperty(consumedType.first, producedType.first, propertyName))
+      appendLine(generateRequestsProperty(consumedType.simpleName, producedType.simpleName, propertyName))
       appendLine()
-      appendLine(generateRequestFunction(consumedType.first, producedType.first, functionName))
+      appendLine(generateRequestFunction(consumedType.simpleName, producedType.simpleName, functionName))
     }
   }
 }
+
+private data class ClassName(
+  val simpleName: String,
+  val qualifiedName: String
+)
