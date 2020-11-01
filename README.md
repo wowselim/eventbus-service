@@ -26,7 +26,7 @@ sealed class Division {
 }
 ```
 
-Annotate the service verticle as follows:
+Next, we need to annotate the service verticle as follows:
 ```kotlin
 @EventBusService(
     topic = "co.selim.sample.division",
@@ -38,14 +38,15 @@ Annotate the service verticle as follows:
 ```
 
 This will generate two things
+* An extension function to request divisions:
+```kotlin
+suspend fun Verticle.divide(request: DivisionRequest): Division
+````
+
 * An extension property to get the division
 requests:
 ```kotlin
 val Verticle.divisionRequests: Flow<EventBusServiceRequest<DivisionRequest, Division>>
 ```
-* An extension function to request divisions:
-```kotlin
-suspend fun Verticle.divide(request: DivisionRequest): Division
-````
 
 This service is fully implemented in the `example` module.
