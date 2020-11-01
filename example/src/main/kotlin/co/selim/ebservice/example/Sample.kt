@@ -1,3 +1,5 @@
+package co.selim.ebservice.example
+
 import co.selim.ebservice.annotation.EventBusService
 import co.selim.ebservice.eventbus.initializeServiceCodec
 import co.selim.sample.division.divide
