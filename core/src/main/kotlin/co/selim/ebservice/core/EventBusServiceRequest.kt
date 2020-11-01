@@ -1,4 +1,4 @@
-package co.selim.ebservice.eventbus
+package co.selim.ebservice.core
 
 import io.vertx.core.eventbus.Message
 

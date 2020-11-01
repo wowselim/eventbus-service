@@ -1,7 +1,7 @@
 package co.selim.ebservice
 
-import co.selim.ebservice.eventbus.EventBusServiceRequest
-import co.selim.ebservice.eventbus.EventBusServiceRequestImpl
+import co.selim.ebservice.core.EventBusServiceRequest
+import co.selim.ebservice.core.EventBusServiceRequestImpl
 import io.vertx.core.Verticle
 import kotlinx.coroutines.flow.Flow
 
@@ -18,7 +18,7 @@ internal fun generateHeader(
       import io.vertx.kotlin.coroutines.await
       import io.vertx.kotlin.coroutines.toChannel
 
-      import co.selim.ebservice.eventbus.deliveryOptions
+      import co.selim.ebservice.core.deliveryOptions
       import ${EventBusServiceRequest::class.qualifiedName}
       import ${EventBusServiceRequestImpl::class.qualifiedName}
 

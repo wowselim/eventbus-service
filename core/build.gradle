@@ -1,0 +1,16 @@
+plugins {
+  id 'org.jetbrains.kotlin.jvm'
+}
+
+group 'co.selim.ebservice'
+version '1.0-SNAPSHOT'
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation "org.jetbrains.kotlin:kotlin-stdlib"
+  implementation "io.vertx:vertx-core:4.0.0.Beta3"
+  api project(':annotation')
+}

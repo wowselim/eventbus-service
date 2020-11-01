@@ -1,6 +1,5 @@
 plugins {
   id 'org.jetbrains.kotlin.jvm'
-  id 'org.jetbrains.kotlin.kapt'
 }
 
 group 'co.selim.ebservice'
@@ -13,10 +12,6 @@ repositories {
 dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0"
-  implementation project(':core')
-  kapt project(':codegen')
-
   implementation "io.vertx:vertx-core:4.0.0.Beta3"
-  implementation "io.vertx:vertx-lang-kotlin:4.0.0.Beta3"
-  implementation "io.vertx:vertx-lang-kotlin-coroutines:4.0.0.Beta3"
+  implementation project(':core')
 }

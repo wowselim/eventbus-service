@@ -1,7 +1,7 @@
 package co.selim.ebservice.example
 
 import co.selim.ebservice.annotation.EventBusService
-import co.selim.ebservice.eventbus.initializeServiceCodec
+import co.selim.ebservice.core.initializeServiceCodec
 import co.selim.sample.division.divide
 import co.selim.sample.division.divisionRequests
 import io.vertx.core.Vertx
