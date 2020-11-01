@@ -1,4 +1,4 @@
-package co.selim.ebservice
+package co.selim.ebservice.codegen
 
 import co.selim.ebservice.annotation.EventBusService
 import java.io.File
