@@ -3,14 +3,14 @@ package co.selim.ebservice.eventbus
 import io.vertx.core.eventbus.Message
 
 interface EventBusServiceRequest<RequestType, ResponseType> {
-  val request: RequestType
+  val body: RequestType
   fun reply(response: ResponseType)
 }
 
 class EventBusServiceRequestImpl<RequestType, ResponseType>(
   private val message: Message<RequestType>
 ) : EventBusServiceRequest<RequestType, ResponseType> {
-  override val request: RequestType = message.body()
+  override val body: RequestType = message.body()
 
   override fun reply(response: ResponseType) {
     message.reply(response, deliveryOptions)

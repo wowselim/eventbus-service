@@ -37,10 +37,9 @@ class SampleVerticle : CoroutineVerticle() {
 )
 class DivisionVerticle : CoroutineVerticle() {
   override suspend fun start() {
-    println("starting to listen for requests")
     divisionRequests
       .onEach { request ->
-        val (dividend, divisor) = request.request
+        val (dividend, divisor) = request.body
         request.reply(
           if (divisor == 0.0) {
             Division.Error("Can't divide by zero")
@@ -65,4 +64,5 @@ suspend fun main() {
   vertx.eventBus().initializeServiceCodec()
   vertx.deployVerticle(DivisionVerticle::class.java.name).await()
   vertx.deployVerticle(SampleVerticle::class.java.name).await()
+  vertx.close().await()
 }
