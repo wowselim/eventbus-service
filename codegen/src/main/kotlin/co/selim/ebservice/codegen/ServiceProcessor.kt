@@ -16,9 +16,7 @@ import javax.lang.model.util.ElementFilter
 @SupportedAnnotationTypes("co.selim.ebservice.annotation.EventBusService")
 class ServiceProcessor : AbstractProcessor() {
   override fun process(annotations: Set<TypeElement>, roundEnv: RoundEnvironment): Boolean {
-    val elements = roundEnv.getElementsAnnotatedWithAny(
-      setOf(EventBusService::class.java)
-    )
+    val elements = roundEnv.getElementsAnnotatedWith(EventBusService::class.java)
     if (elements.isEmpty()) return false
 
     val typeElements = ElementFilter.typesIn(elements)
@@ -30,7 +28,7 @@ class ServiceProcessor : AbstractProcessor() {
 
         val consumedType = service.extractConsumedType()
         val producedType = service.extractProducedType()
-        Files.writeString(
+        Files.write(
           sourceFilePath,
           generateServiceExtensions(
             service.topic,
@@ -38,7 +36,7 @@ class ServiceProcessor : AbstractProcessor() {
             producedType,
             service.propertyName,
             service.functionName
-          )
+          ).encodeToByteArray()
         )
       }
     }
