@@ -12,3 +12,13 @@ repositories {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 }
+
+publishing {
+  publications {
+    create("maven", MavenPublication.class) {
+      groupId = getGroup()
+      artifactId = rootProject.name + '-' + project.name
+      version = getVersion()
+    }
+  }
+}

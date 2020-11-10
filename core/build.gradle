@@ -14,3 +14,13 @@ dependencies {
   implementation "io.vertx:vertx-core:4.0.0.Beta3"
   api project(':annotation')
 }
+
+publishing {
+  publications {
+    create("maven", MavenPublication.class) {
+      groupId = getGroup()
+      artifactId = rootProject.name + '-' + project.name
+      version = getVersion()
+    }
+  }
+}
