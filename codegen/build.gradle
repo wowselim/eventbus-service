@@ -13,6 +13,7 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0"
   implementation "io.vertx:vertx-core:4.0.0.Beta3"
+  implementation "com.squareup:kotlinpoet:1.7.2"
   implementation project(':core')
 }
 
