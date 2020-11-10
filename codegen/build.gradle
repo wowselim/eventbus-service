@@ -19,6 +19,7 @@ dependencies {
 publishing {
   publications {
     create("maven", MavenPublication.class) {
+      from components.java
       groupId = getGroup()
       artifactId = rootProject.name + '-' + project.name
       version = getVersion()
