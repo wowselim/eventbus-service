@@ -10,18 +10,15 @@ import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
+
 class SampleVerticle : CoroutineVerticle() {
   override suspend fun start() {
-    var divisionResult = divide(DivisionRequest(5.0, 0.0))
-
-    when (divisionResult) {
+    when (val divisionResult = divide(DivisionRequest(5.0, 0.0))) {
       is Division.Success -> println("Yay! $divisionResult")
       is Division.Error -> System.err.println(divisionResult)
     }
 
-    divisionResult = divide(DivisionRequest(5.0, 2.0))
-
-    when (divisionResult) {
+    when (val divisionResult = divide(DivisionRequest(5.0, 2.0))) {
       is Division.Success -> println("Yay! $divisionResult")
       is Division.Error -> System.err.println(divisionResult)
     }
