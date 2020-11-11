@@ -1,6 +1,4 @@
 buildscript {
-  ext.version = "0.0.1"
-
   repositories {
     jcenter()
     mavenCentral()
@@ -16,7 +14,7 @@ allprojects {
   apply plugin: 'maven-publish'
 
   group 'co.selim.ebservice'
-  version '1.0'
+  version '1.0.1'
 
   repositories {
     jcenter()
