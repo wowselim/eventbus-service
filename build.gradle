@@ -11,12 +11,12 @@ buildscript {
   }
 }
 
-group 'co.selim.ebservice'
-version '1.0-SNAPSHOT'
-
 allprojects {
   apply plugin: 'kotlin'
   apply plugin: 'maven-publish'
+
+  group 'co.selim.ebservice'
+  version '1.0'
 
   repositories {
     jcenter()

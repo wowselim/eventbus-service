@@ -2,9 +2,6 @@ plugins {
   id 'org.jetbrains.kotlin.jvm'
 }
 
-group 'co.selim.ebservice'
-version '1.0-SNAPSHOT'
-
 repositories {
   mavenCentral()
 }
