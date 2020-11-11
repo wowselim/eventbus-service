@@ -38,21 +38,21 @@ Next, we need to annotate the service verticle as follows:
 ```
 
 **Note:**
-> EventBus topics should follow package naming conventions
-to avoid errors.
+> * EventBus topics should follow package naming conventions.
+> * Custom types should be preferred over `String` etc.
 
 ---
 
 This will generate two things
 * An extension function to request divisions:
 ```kotlin
-suspend fun Verticle.divide(request: DivisionRequest): Division
+suspend fun Vertx.divide(request: DivisionRequest): Division
 ````
 
 * An extension property to get the division
 requests:
 ```kotlin
-val Verticle.divisionRequests: Flow<EventBusServiceRequest<DivisionRequest, Division>>
+val Vertx.divisionRequests: Flow<EventBusServiceRequest<DivisionRequest, Division>>
 ```
 
 This service is fully implemented in the `example` module.

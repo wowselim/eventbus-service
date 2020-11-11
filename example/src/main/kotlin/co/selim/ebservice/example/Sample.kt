@@ -13,12 +13,12 @@ import kotlinx.coroutines.flow.onEach
 
 class SampleVerticle : CoroutineVerticle() {
   override suspend fun start() {
-    when (val divisionResult = divide(DivisionRequest(5.0, 0.0))) {
+    when (val divisionResult = vertx.divide(DivisionRequest(5.0, 0.0))) {
       is Division.Success -> println("Yay! $divisionResult")
       is Division.Error -> System.err.println(divisionResult)
     }
 
-    when (val divisionResult = divide(DivisionRequest(5.0, 2.0))) {
+    when (val divisionResult = vertx.divide(DivisionRequest(5.0, 2.0))) {
       is Division.Success -> println("Yay! $divisionResult")
       is Division.Error -> System.err.println(divisionResult)
     }
@@ -34,7 +34,7 @@ class SampleVerticle : CoroutineVerticle() {
 )
 class DivisionVerticle : CoroutineVerticle() {
   override suspend fun start() {
-    divisionRequests
+    vertx.divisionRequests
       .onEach { request ->
         val (dividend, divisor) = request.body
         request.reply(

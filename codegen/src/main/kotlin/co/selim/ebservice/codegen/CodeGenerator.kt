@@ -4,7 +4,7 @@ import co.selim.ebservice.core.EventBusServiceRequest
 import co.selim.ebservice.core.EventBusServiceRequestImpl
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import io.vertx.core.Verticle
+import io.vertx.core.Vertx
 import kotlinx.coroutines.flow.Flow
 
 internal fun generateFile(
@@ -28,9 +28,9 @@ internal fun generateRequestsProperty(
   val getter = FunSpec.getterBuilder()
     .addCode(
       """
-      return vertx.eventBus()
+      return eventBus()
         .consumer<%T>(TOPIC)
-        .%M(vertx)
+        .%M(this)
         .%M()
         .%M { %T<%T, %T>(it) }
     """.trimIndent(),
@@ -46,7 +46,7 @@ internal fun generateRequestsProperty(
 
   val flowType = EventBusServiceRequest::class.asTypeName().parameterizedBy(requestType, responseType)
   return PropertySpec.builder(propertyName, Flow::class.asTypeName().parameterizedBy(flowType))
-    .receiver(Verticle::class)
+    .receiver(Vertx::class)
     .getter(getter)
     .build()
 }
@@ -59,11 +59,11 @@ internal fun generateRequestFunction(
   return FunSpec.builder(functionName)
     .addModifiers(KModifier.SUSPEND)
     .addParameter("request", requestType)
-    .receiver(Verticle::class)
+    .receiver(Vertx::class)
     .returns(responseType)
     .addCode(
       """
-      return vertx.eventBus()
+      return eventBus()
         .request<%T>(TOPIC, request, %M)
         .%M()
         .body()
