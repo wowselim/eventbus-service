@@ -1,4 +1,5 @@
 # EventBus Service
+[![](https://jitpack.io/v/wowselim/eventbus-service.svg)](https://jitpack.io/#wowselim/eventbus-service)
 
 EbService generates kotlin code that enables
 a type-safe way of using the Vert.x EventBus.
@@ -56,3 +57,13 @@ val Vertx.divisionRequests: Flow<EventBusServiceRequest<DivisionRequest, Divisio
 ```
 
 This service is fully implemented in the `example` module.
+
+## Adding it to your project
+Add the [JitPack repository](https://jitpack.io/#wowselim/eventbus-service) to your build script and include the following dependencies:
+
+```groovy
+implementation 'com.github.wowselim.eventbus-service:eventbus-service-core:<latestVersion>'
+kapt 'com.github.wowselim.eventbus-service:eventbus-service-codegen:<latestVersion>'
+```
+
+The latest version numer can be found on JitPack as well.
