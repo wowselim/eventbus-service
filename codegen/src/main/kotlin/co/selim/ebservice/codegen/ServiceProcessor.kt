@@ -39,11 +39,11 @@ class ServiceProcessor : AbstractProcessor() {
   }
 
   private fun EventBusService.extractConsumedType(): ClassName {
-    return extractClass { ClassName(consumes.java.packageName, consumes.java.simpleName) }
+    return extractClass { ClassName.bestGuess(consumes.java.name) }
   }
 
   private fun EventBusService.extractProducedType(): ClassName {
-    return extractClass { ClassName(produces.java.packageName, produces.java.simpleName) }
+    return extractClass { ClassName.bestGuess(produces.java.name) }
   }
 
   private fun extractClass(block: () -> ClassName): ClassName {
@@ -51,10 +51,8 @@ class ServiceProcessor : AbstractProcessor() {
       block()
     } catch (e: MirroredTypeException) {
       val typeElement = processingEnv.typeUtils.asElement(e.typeMirror) as TypeElement
-      val fullName = typeElement.qualifiedName.toString()
-      val packageName = fullName.substringBeforeLast('.')
-      val simpleName = fullName.substringAfterLast('.')
-      ClassName(packageName, simpleName)
+      val qualifiedName = typeElement.qualifiedName.toString()
+      ClassName.bestGuess(qualifiedName)
     }
   }
 
