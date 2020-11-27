@@ -8,7 +8,7 @@ repositories {
 
 dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib"
-  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.0"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2-native-mt"
   implementation "io.vertx:vertx-core:4.0.0.CR2"
   implementation "com.squareup:kotlinpoet:1.7.2"
   implementation project(':core')
