@@ -16,7 +16,7 @@ internal fun generateFile(
     .initializer("%S", topic)
     .build()
 
-  return FileSpec.builder(topic, "ServiceExtensions.kt")
+  return FileSpec.builder(topic, "ServiceExtensions")
     .addProperty(topicProperty)
 }
 
