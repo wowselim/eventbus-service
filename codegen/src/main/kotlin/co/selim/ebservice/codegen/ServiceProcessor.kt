@@ -18,9 +18,10 @@ class ServiceProcessor : AbstractProcessor() {
     if (elements.isEmpty()) return false
 
     val typeElements = ElementFilter.typesIn(elements)
+    val methodElements = ElementFilter.methodsIn(elements)
 
-    typeElements.forEach { typeElement ->
-      typeElement.getAnnotation(EventBusService::class.java)?.let { service ->
+    (typeElements + methodElements).forEach { element ->
+      element.getAnnotation(EventBusService::class.java)?.let { service ->
         val consumedType = service.extractConsumedType()
         val producedType = service.extractProducedType()
 
