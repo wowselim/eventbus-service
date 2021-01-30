@@ -35,9 +35,9 @@ class SampleVerticle : CoroutineVerticle() {
 class DivisionVerticle : CoroutineVerticle() {
   override suspend fun start() {
     vertx.divisionRequests
-      .onEach { request ->
-        val (dividend, divisor) = request.body
-        request.reply(
+      .onEach { (request, reply) ->
+        val (dividend, divisor) = request
+        reply(
           if (divisor == 0.0) {
             Division.Error("Can't divide by zero")
           } else {
