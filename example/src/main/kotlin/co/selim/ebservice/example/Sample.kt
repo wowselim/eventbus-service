@@ -17,11 +17,15 @@ interface MathService {
     data class Success(val quotient: Double) : Division()
     data class Error(val message: String) : Division()
   }
+
+  companion object {
+    fun create(vertx: Vertx): MathService = MathServiceImpl(vertx)
+  }
 }
 
 class SampleVerticle : CoroutineVerticle() {
   override suspend fun start() {
-    val mathService = MathServiceImpl(vertx)
+    val mathService = MathService.create(vertx)
 
     val sum = mathService.add(3.3, 4.5)
     println(sum)
