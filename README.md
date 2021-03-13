@@ -16,45 +16,33 @@ making use of a special
 Imagine we have a service that can divide a
 double by another double.
 
-We might model the input and output data for this
-service as follows:
+We might model this service as follows:
 ```kotlin
-data class DivisionRequest(val dividend: Double, val divisor: Double)
+interface DivisionService {
+  suspend fun divide(dividend: Double, divisor: Double): Division
 
-sealed class Division {
-  data class Success(val quotient: Double) : Division()
-  data class Error(val message: String) : Division()
+  sealed class Division {
+    data class Success(val quotient: Double) : Division()
+    data class Error(val message: String) : Division()
+  }
 }
 ```
 
 Next, we need to annotate the service verticle as follows:
 ```kotlin
-@EventBusService(
-    topic = "co.selim.sample.division",
-    consumes = DivisionRequest::class,
-    produces = Division::class,
-    propertyName = "divisionRequests",
-    functionName = "divide"
-)
+@EventBusService
+interface DivisionService
 ```
-
-**Note:**
-> * EventBus topics should follow package naming conventions.
-> * Custom types should be preferred over `String` etc.
-
----
 
 This will generate two things
-* An extension function to request divisions:
-```kotlin
-suspend fun Vertx.divide(request: DivisionRequest): Division
-````
-
-* An extension property to get the division
-requests:
-```kotlin
-val Vertx.divisionRequests: Flow<EventBusServiceRequest<DivisionRequest, Division>>
-```
+* An implementation of this service (`DivisionServiceImpl`).
+  This implementation forwards the parameters to subscribers
+  of the generated properties.
+* An extension property to get the division requests:
+  ```kotlin
+  val Vertx.divisionRequests: Flow<EventBusServiceRequest<DivisionRequest, Division>>
+  ```
+  Where `DivisionRequest` is a data class that wraps the two parameters.
 
 This service is fully implemented in the `example` module.
 
