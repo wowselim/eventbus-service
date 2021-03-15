@@ -67,7 +67,7 @@ class ServiceProcessor : AbstractProcessor() {
 
       val typeParameters = kmFunction.returnType.getTypeParameters()
       val returnType = kmFunction.returnType.classifier
-        .toClassName()
+        .toClassName(kmFunction.returnType.isNullable)
         .safelyParameterizedBy(typeParameters)
 
       val parameters = kmFunction.valueParameters
@@ -91,9 +91,10 @@ class ServiceProcessor : AbstractProcessor() {
 
   private fun Sequence<ImmutableKmValueParameter>.toFunctionParameters(): Sequence<Parameter> {
     return map { kmValueParameter ->
-      val classifier = kmValueParameter.type!!.classifier
-      val typeParametersOfParameter = kmValueParameter.type!!.getTypeParameters()
-      val typeOfParameter = classifier.toClassName().safelyParameterizedBy(typeParametersOfParameter)
+      val type = kmValueParameter.type!!
+      val classifier = type.classifier
+      val typeParametersOfParameter = type.getTypeParameters()
+      val typeOfParameter = classifier.toClassName(type.isNullable).safelyParameterizedBy(typeParametersOfParameter)
       Parameter(kmValueParameter.name, typeOfParameter)
     }
   }
@@ -107,7 +108,7 @@ class ServiceProcessor : AbstractProcessor() {
       val params = typeProjection.type?.getTypeParameters()
 
       when (val classifier = typeProjection.type?.classifier) {
-        is KmClassifier.Class -> classifier.toClassName().safelyParameterizedBy(params)
+        is KmClassifier.Class -> classifier.toClassName(typeProjection.type!!.isNullable).safelyParameterizedBy(params)
         is KmClassifier.TypeParameter,
         is KmClassifier.TypeAlias,
         null -> null
@@ -123,10 +124,10 @@ class ServiceProcessor : AbstractProcessor() {
     }
   }
 
-  private fun KmClassifier.toClassName(): ClassName {
+  private fun KmClassifier.toClassName(nullable: Boolean): ClassName {
     return when (this) {
-      is KmClassifier.Class -> name.toClassName()
-      is KmClassifier.TypeAlias -> name.toClassName()
+      is KmClassifier.Class -> name.toClassName().copy(nullable = nullable) as ClassName
+      is KmClassifier.TypeAlias -> name.toClassName().copy(nullable = nullable) as ClassName
       is KmClassifier.TypeParameter -> error("Type parameters are not supported")
     }
   }
