@@ -15,5 +15,5 @@ dependencies {
 
   implementation "io.vertx:vertx-core:4.0.2"
   implementation "io.vertx:vertx-lang-kotlin:4.0.2"
-  implementation "io.vertx:vertx-lang-kotlin-coroutines:4.0.2"
+  implementation "io.vertx:vertx-lang-kotlin-coroutines:4.0.3"
 }
