@@ -28,7 +28,7 @@ interface DivisionService {
 }
 ```
 
-Next, we need to annotate the service verticle as follows:
+Next, we need to annotate this interface as follows:
 ```kotlin
 @EventBusService
 interface DivisionService
