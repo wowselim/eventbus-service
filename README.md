@@ -40,7 +40,7 @@ This will generate two things
   of the generated properties.
 * An extension property to get the division requests:
   ```kotlin
-  val Vertx.divisionRequests: Flow<EventBusServiceRequest<DivisionRequest, Division>>
+  val Vertx.divideRequests: Flow<EventBusServiceRequest<DivisionRequest, Division>>
   ```
   Where `DivisionRequest` is a data class that wraps the two parameters.
 
