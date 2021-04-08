@@ -1,5 +1,6 @@
 # EventBus Service
 [![](https://jitpack.io/v/wowselim/eventbus-service.svg)](https://jitpack.io/#wowselim/eventbus-service)
+[![](https://github.com/wowselim/eventbus-service/workflows/Gradle%20Build/badge.svg)](https://github.com/wowselim/eventbus-service)
 
 EbService generates kotlin code that enables
 a type-safe way of using the Vert.x EventBus.
