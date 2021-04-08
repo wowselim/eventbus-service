@@ -23,26 +23,6 @@ interface MathService {
   }
 }
 
-class SampleVerticle : CoroutineVerticle() {
-  override suspend fun start() {
-    val mathService = MathService.create(vertx)
-
-    val sum = mathService.add(3.3, 4.5)
-    println(sum)
-
-    when (val divisionResult = mathService.divide(5.0, 0.0)) {
-      is MathService.Division.Success -> println(divisionResult)
-      is MathService.Division.Error -> System.err.println(divisionResult)
-    }
-
-    when (val divisionResult = mathService.divide(5.0, 2.0)) {
-      is MathService.Division.Success -> println(divisionResult)
-      is MathService.Division.Error -> System.err.println(divisionResult)
-    }
-
-  }
-}
-
 class DivisionVerticle : CoroutineVerticle() {
   override suspend fun start() {
     vertx.divideRequests
@@ -62,6 +42,26 @@ class DivisionVerticle : CoroutineVerticle() {
         val (addendA, addendB) = request
         reply(addendA + addendB)
       }.launchIn(this)
+  }
+}
+
+class SampleVerticle : CoroutineVerticle() {
+  override suspend fun start() {
+    val mathService = MathService.create(vertx)
+
+    val sum = mathService.add(3.3, 4.5)
+    println(sum)
+
+    when (val divisionResult = mathService.divide(5.0, 0.0)) {
+      is MathService.Division.Success -> println(divisionResult)
+      is MathService.Division.Error -> System.err.println(divisionResult)
+    }
+
+    when (val divisionResult = mathService.divide(5.0, 2.0)) {
+      is MathService.Division.Success -> println(divisionResult)
+      is MathService.Division.Error -> System.err.println(divisionResult)
+    }
+
   }
 }
 
