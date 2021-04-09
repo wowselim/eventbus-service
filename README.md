@@ -55,4 +55,4 @@ implementation 'com.github.wowselim.eventbus-service:eventbus-service-core:<late
 kapt 'com.github.wowselim.eventbus-service:eventbus-service-codegen:<latestVersion>'
 ```
 
-The latest version can be found in the [releases section](https://github.com/wowselim/eventbus-service/releases/latest).
+The latest version can be found in the [releases section](https://github.com/wowselim/eventbus-service/releases).
