@@ -6,18 +6,3 @@ updates:
     interval: daily
     time: "04:00"
   open-pull-requests-limit: 10
-  ignore:
-  - dependency-name: org.jetbrains.kotlinx:kotlinx-coroutines-core
-    versions:
-    - "> 1.4.0, < 1.5"
-  - dependency-name: io.vertx:vertx-lang-kotlin
-    versions:
-    - 4.0.3
-  - dependency-name: io.vertx:vertx-core
-    versions:
-    - 4.0.1
-    - 4.0.3
-  - dependency-name: io.vertx:vertx-lang-kotlin-coroutines
-    versions:
-    - 4.0.1
-    - 4.0.3
