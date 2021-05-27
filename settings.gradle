@@ -1,3 +1,10 @@
+pluginManagement {
+  repositories {
+    gradlePluginPortal()
+    google()
+  }
+}
+
 rootProject.name = 'eventbus-service'
 include ':codegen', ':annotation', ':core'
 if (!System.env.JITPACK)
