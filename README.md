@@ -36,8 +36,7 @@ interface DivisionService
 ```
 
 This will generate two things
-* An implementation of this service (`DivisionServiceImpl`).
-  This implementation forwards the parameters to subscribers
+* An implementation of this service (`DivisionServiceImpl`). This implementation forwards the parameters to subscribers
   of the generated properties.
 * An extension property to get the division requests:
   ```kotlin
@@ -48,7 +47,9 @@ This will generate two things
 This service is fully implemented in the `example` module.
 
 ## Adding it to your project
-Add the [JitPack repository](https://jitpack.io/#wowselim/eventbus-service) to your build script and include the following dependencies:
+
+Add the [JitPack repository](https://jitpack.io/#wowselim/eventbus-service) to your build script and include the
+following dependencies:
 
 ```groovy
 implementation 'com.github.wowselim.eventbus-service:eventbus-service-core:<latestVersion>'
@@ -56,3 +57,11 @@ kapt 'com.github.wowselim.eventbus-service:eventbus-service-codegen:<latestVersi
 ```
 
 The latest version can be found in the [releases section](https://github.com/wowselim/eventbus-service/releases).
+
+## Debugging
+
+To debug the code generator, run the `kspKotlin` task in the following way to be able to attach the debugger:
+
+```bash
+./gradlew kspKotlin --no-daemon -Dorg.gradle.debug=true -Dkotlin.compiler.execution.strategy=in-process
+```

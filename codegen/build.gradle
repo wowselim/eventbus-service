@@ -4,14 +4,15 @@ plugins {
 
 repositories {
   mavenCentral()
+  google()
 }
 
 dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
-  implementation "io.vertx:vertx-core:4.0.3"
+  implementation "io.vertx:vertx-core:4.1.0.CR1"
   implementation "com.squareup:kotlinpoet:1.8.0"
-  implementation "com.squareup:kotlinpoet-metadata:1.8.0"
+  implementation "com.google.devtools.ksp:symbol-processing-api:1.5.10-1.0.0-beta01"
   implementation project(':core')
 }
 

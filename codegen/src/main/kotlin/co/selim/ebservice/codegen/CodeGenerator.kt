@@ -4,35 +4,37 @@ import co.selim.ebservice.core.EventBusServiceRequest
 import co.selim.ebservice.core.EventBusServiceRequestImpl
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 import io.vertx.core.Vertx
 import kotlinx.coroutines.flow.Flow
 
 internal fun generateFile(
-  serviceName: ClassName
+  packageName: String,
+  serviceName: String,
 ): FileSpec.Builder {
-  val topicProperty = PropertySpec.builder(
-    "TOPIC", String::class, KModifier.PRIVATE, KModifier.CONST
-  )
-    .initializer("%S", "${serviceName.packageName}.${serviceName.simpleName.toLowerCase()}")
+  val topicProperty = PropertySpec.builder("TOPIC", String::class, KModifier.PRIVATE, KModifier.CONST)
+    .initializer("%S", "${packageName}.${serviceName.toLowerCase()}")
     .build()
 
-  return FileSpec.builder(serviceName.packageName, serviceName.simpleName + "Impl")
+  return FileSpec.builder(packageName, serviceName + "Impl")
     .addProperty(topicProperty)
 }
 
-@KotlinPoetMetadataPreview
 internal fun generateRequestProperties(
-  serviceName: ClassName,
-  functions: Set<Function>
+  packageName: String,
+  functions: List<Function>
 ): Iterable<PropertySpec> {
   return functions.map { function ->
-    val requestType = when (function.parameters.size) {
+    val requestType: TypeName = when (function.parameters.size) {
       0 -> Unit::class.asTypeName()
       1 -> function.parameters.first().type
-      else -> ClassName(serviceName.packageName, function.name.capitalize() + "Parameters")
+      else -> ClassName(packageName, function.name.capitalize() + "Parameters")
     }
-    generateRequestsProperty(function.name, requestType, function.returnType, function.name + "Requests")
+    generateRequestsProperty(
+      functionName = function.name,
+      requestType = requestType,
+      responseType = function.returnType,
+      propertyName = function.name + "Requests"
+    )
   }
 }
 
@@ -68,12 +70,11 @@ private fun generateRequestsProperty(
     .build()
 }
 
-@KotlinPoetMetadataPreview
 internal fun generateServiceImpl(
   service: Service
 ): TypeSpec.Builder {
-  return TypeSpec.classBuilder(service.name.peerClass(service.name.simpleName + "Impl"))
-    .addSuperinterface(service.name)
+  return TypeSpec.classBuilder(service.name + "Impl")
+    .addSuperinterface(ClassName(service.packageName, service.name))
     .primaryConstructor(
       FunSpec.constructorBuilder()
         .addParameter("vertx", Vertx::class)
@@ -85,11 +86,10 @@ internal fun generateServiceImpl(
     )
 }
 
-@KotlinPoetMetadataPreview
 internal fun generateFunctions(
   fileSpec: FileSpec.Builder,
   serviceSpec: TypeSpec.Builder,
-  functions: Set<Function>
+  functions: List<Function>
 ) {
   functions.forEach { function ->
     val container = if (function.parameters.size > 1) {
@@ -100,10 +100,9 @@ internal fun generateFunctions(
   }
 }
 
-@KotlinPoetMetadataPreview
 private fun generateParameterContainer(
   functionName: String,
-  parameters: Set<Parameter>
+  parameters: List<Parameter>
 ): TypeSpec {
   return TypeSpec.classBuilder(functionName.capitalize() + "Parameters")
     .addModifiers(KModifier.DATA)
@@ -125,13 +124,14 @@ private fun generateParameterContainer(
     .build()
 }
 
-
-@KotlinPoetMetadataPreview
 private fun generateFunction(function: Function, containerType: String?): FunSpec {
   val message: String = containerType?.let { type ->
     val params = function.parameters.joinToString { it.name }
     "$type($params)"
   } ?: function.parameters.map { it.name }.firstOrNull() ?: "Unit"
+  val returnType = function.returnType
+  val isReturnTypeUnit = returnType == Unit::class.asTypeName()
+
   return FunSpec.builder(function.name)
     .addModifiers(KModifier.OVERRIDE, KModifier.SUSPEND)
     .addParameters(
@@ -139,17 +139,30 @@ private fun generateFunction(function: Function, containerType: String?): FunSpe
         ParameterSpec(parameter.name, parameter.type)
       }
     )
-    .returns(function.returnType)
-    .addCode(
-      """
-      return vertx.eventBus()
-        .request<%T>(TOPIC + ".${function.name}", $message, %M)
-        .%M()
-        .body()
-    """.trimIndent(),
-      function.returnType,
-      MemberName("co.selim.ebservice.core", "deliveryOptions"),
-      MemberName("io.vertx.kotlin.coroutines", "await")
-    )
+    .returns(returnType)
+    .apply {
+      val deliveryOptions = MemberName("co.selim.ebservice.core", "deliveryOptions")
+      if (isReturnTypeUnit) {
+        addCode(
+          """
+          |vertx.eventBus()
+          |  .send(TOPIC + ".${function.name}", $message, %M)
+          |""".trimMargin(),
+          deliveryOptions
+        )
+      } else {
+        addCode(
+          """
+          |return vertx.eventBus()
+          |  .request<%T>(TOPIC + ".${function.name}", $message, %M)
+          |  .%M()
+          |  .body()
+          |""".trimMargin(),
+          returnType,
+          deliveryOptions,
+          MemberName("io.vertx.kotlin.coroutines", "await")
+        )
+      }
+    }
     .build()
 }
