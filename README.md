@@ -48,7 +48,9 @@ This will generate two things
 This service is fully implemented in the `example` module.
 
 ## Adding it to your project
-Add the [JitPack repository](https://jitpack.io/#wowselim/eventbus-service) to your build script and include the following dependencies:
+
+Add the [JitPack repository](https://jitpack.io/#wowselim/eventbus-service) to your build script and include the
+following dependencies:
 
 ```groovy
 implementation 'com.github.wowselim.eventbus-service:eventbus-service-core:<latestVersion>'
@@ -56,3 +58,12 @@ kapt 'com.github.wowselim.eventbus-service:eventbus-service-codegen:<latestVersi
 ```
 
 The latest version can be found in the [releases section](https://github.com/wowselim/eventbus-service/releases).
+
+## Debugging
+
+To debug the code generator, run the `kaptKotlin` task in the following way to be able to attach the debugger:
+
+```bash
+./gradlew kaptKotlin --no-daemon -Dorg.gradle.debug=true -Dkotlin.compiler.execution.strategy="in-process" -Dkotlin.daemon.jvm.options=
+"-Xdebug,-Xrunjdwp:transport=dt_socket\,address=5005\,server=y\,suspend=n"
+```
