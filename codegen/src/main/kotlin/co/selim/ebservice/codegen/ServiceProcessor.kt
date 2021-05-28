@@ -40,7 +40,8 @@ class ServiceProcessor : AbstractProcessor() {
         .extractFunctions()
         .toSet()
 
-      Service(kmClass.name.toClassName(), functions)
+      val annotation = typeElement.getAnnotation(EventBusService::class.java)
+      Service(kmClass.name.toClassName(), functions, annotation.propertyVisibility)
     }
 
     services.forEach { service ->
@@ -50,7 +51,8 @@ class ServiceProcessor : AbstractProcessor() {
           .apply { generateFunctions(fileSpecBuilder, this, service.functions) }
           .build()
       )
-      generateRequestProperties(service.name, service.functions).forEach(fileSpecBuilder::addProperty)
+      generateRequestProperties(service.name, service.functions, service.propertyVisibility)
+        .forEach(fileSpecBuilder::addProperty)
       fileSpecBuilder.build()
         .writeTo(processingEnv.filer)
     }
