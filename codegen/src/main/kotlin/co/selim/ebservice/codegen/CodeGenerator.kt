@@ -1,5 +1,6 @@
 package co.selim.ebservice.codegen
 
+import co.selim.ebservice.annotation.Visibility
 import co.selim.ebservice.core.EventBusServiceRequest
 import co.selim.ebservice.core.EventBusServiceRequestImpl
 import com.squareup.kotlinpoet.*
@@ -24,7 +25,8 @@ internal fun generateFile(
 @KotlinPoetMetadataPreview
 internal fun generateRequestProperties(
   serviceName: ClassName,
-  functions: Set<Function>
+  functions: Set<Function>,
+  visibility: Visibility,
 ): Iterable<PropertySpec> {
   return functions.map { function ->
     val requestType = when (function.parameters.size) {
@@ -32,7 +34,13 @@ internal fun generateRequestProperties(
       1 -> function.parameters.first().type
       else -> ClassName(serviceName.packageName, function.name.capitalize() + "Parameters")
     }
-    generateRequestsProperty(function.name, requestType, function.returnType, function.name + "Requests")
+    generateRequestsProperty(
+      function.name,
+      requestType,
+      function.returnType,
+      function.name + "Requests",
+      visibility,
+    )
   }
 }
 
@@ -40,7 +48,8 @@ private fun generateRequestsProperty(
   functionName: String,
   requestType: TypeName,
   responseType: TypeName,
-  propertyName: String
+  propertyName: String,
+  visibility: Visibility,
 ): PropertySpec {
   val getter = FunSpec.getterBuilder()
     .addCode(
@@ -64,6 +73,11 @@ private fun generateRequestsProperty(
   val flowType = EventBusServiceRequest::class.asTypeName().parameterizedBy(requestType, responseType)
   return PropertySpec.builder(propertyName, Flow::class.asTypeName().parameterizedBy(flowType))
     .receiver(Vertx::class)
+    .apply {
+      if (visibility == Visibility.INTERNAL) {
+        addModifiers(KModifier.INTERNAL)
+      }
+    }
     .getter(getter)
     .build()
 }
