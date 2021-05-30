@@ -38,7 +38,7 @@ interface DivisionService
 This will generate two things
 * An implementation of this service (`DivisionServiceImpl`) that translates function
   calls into EventBus requests.
-* Extension properties that allows you to handle those requests:
+* An extension property that allows you to handle those requests:
   ```kotlin
   val Vertx.divideRequests: Flow<EventBusServiceRequest<DivideParameters, Division>>
   ```
