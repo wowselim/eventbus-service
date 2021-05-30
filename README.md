@@ -36,14 +36,15 @@ interface DivisionService
 ```
 
 This will generate two things
-* An implementation of this service (`DivisionServiceImpl`).
-  This implementation forwards the parameters to subscribers
-  of the generated properties.
-* An extension property to get the division requests:
+* An implementation of this service (`DivisionServiceImpl`) that translates function
+  calls into EventBus requests.
+* Extension properties that allows you to handle those requests:
   ```kotlin
-  val Vertx.divideRequests: Flow<EventBusServiceRequest<DivisionRequest, Division>>
+  val Vertx.divideRequests: Flow<EventBusServiceRequest<DivideParameters, Division>>
   ```
-  Where `DivisionRequest` is a data class that wraps the two parameters.
+
+Since the function has two parameters, we need to wrap them in a container. This is handled automatically
+via a generated data class (`DivideParameters`).
 
 This service is fully implemented in the `example` module.
 
