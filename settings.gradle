@@ -1,4 +1,4 @@
 rootProject.name = 'eventbus-service'
-include ':codegen', ':annotation', ':core'
+include ':codegen', ':annotation', ':core', ':test'
 if (!System.env.JITPACK)
   include ':example'
