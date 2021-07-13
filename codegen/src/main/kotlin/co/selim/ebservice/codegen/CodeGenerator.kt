@@ -8,6 +8,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 import io.vertx.core.Vertx
 import kotlinx.coroutines.flow.Flow
+import java.util.*
 
 internal fun generateFile(
   serviceName: ClassName
@@ -15,7 +16,7 @@ internal fun generateFile(
   val topicProperty = PropertySpec.builder(
     "TOPIC", String::class, KModifier.PRIVATE, KModifier.CONST
   )
-    .initializer("%S", "${serviceName.packageName}.${serviceName.simpleName.toLowerCase()}")
+    .initializer("%S", "${serviceName.packageName}.${serviceName.simpleName.lowercase(Locale.getDefault())}")
     .build()
 
   return FileSpec.builder(serviceName.packageName, serviceName.simpleName + "Impl")
@@ -32,7 +33,12 @@ internal fun generateRequestProperties(
     val requestType = when (function.parameters.size) {
       0 -> Unit::class.asTypeName()
       1 -> function.parameters.first().type
-      else -> ClassName(serviceName.packageName, function.name.capitalize() + "Parameters")
+      else -> {
+        val capitalizedName = function.name.replaceFirstChar {
+          it.titlecase(Locale.getDefault())
+        }
+        ClassName(serviceName.packageName, capitalizedName + "Parameters")
+      }
     }
     generateRequestsProperty(
       function.name,
@@ -61,7 +67,7 @@ private fun generateRequestsProperty(
         .%M { %T<%T, %T>(it) }
     """.trimIndent(),
       requestType,
-      MemberName("io.vertx.kotlin.coroutines", "toChannel"),
+      MemberName("io.vertx.kotlin.coroutines", "toReceiveChannel"),
       MemberName("kotlinx.coroutines.flow", "receiveAsFlow"),
       MemberName("kotlinx.coroutines.flow", "map"),
       EventBusServiceRequestImpl::class.asTypeName(),
@@ -119,7 +125,8 @@ private fun generateParameterContainer(
   functionName: String,
   parameters: Set<Parameter>
 ): TypeSpec {
-  return TypeSpec.classBuilder(functionName.capitalize() + "Parameters")
+  val capitalizedFunctionName = functionName.replaceFirstChar { it.titlecase(Locale.ROOT) }
+  return TypeSpec.classBuilder(capitalizedFunctionName + "Parameters")
     .addModifiers(KModifier.DATA)
     .primaryConstructor(
       FunSpec.constructorBuilder()
