@@ -6,7 +6,10 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.metadata.*
 import kotlinx.metadata.KmClassifier
-import javax.annotation.processing.*
+import javax.annotation.processing.AbstractProcessor
+import javax.annotation.processing.RoundEnvironment
+import javax.annotation.processing.SupportedAnnotationTypes
+import javax.annotation.processing.SupportedOptions
 import javax.lang.model.SourceVersion
 import javax.lang.model.element.Element
 import javax.lang.model.element.TypeElement
@@ -14,7 +17,6 @@ import javax.lang.model.util.ElementFilter
 import javax.tools.Diagnostic
 
 @KotlinPoetMetadataPreview
-@SupportedSourceVersion(SourceVersion.RELEASE_8)
 @SupportedOptions("kapt.kotlin.generated")
 @SupportedAnnotationTypes("co.selim.ebservice.annotation.EventBusService")
 class ServiceProcessor : AbstractProcessor() {
@@ -135,5 +137,9 @@ class ServiceProcessor : AbstractProcessor() {
 
   override fun getSupportedAnnotationTypes(): Set<String> {
     return setOf(EventBusService::class.java.name)
+  }
+
+  override fun getSupportedSourceVersion(): SourceVersion {
+    return SourceVersion.latestSupported()
   }
 }
