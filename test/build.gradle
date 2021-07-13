@@ -9,15 +9,15 @@ repositories {
 
 dependencies {
   testImplementation "org.jetbrains.kotlin:kotlin-stdlib"
-  testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
+  testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1"
   testImplementation project(':core')
   kaptTest project(':codegen')
 
-  testImplementation "io.vertx:vertx-core:4.1.0"
-  testImplementation "io.vertx:vertx-lang-kotlin:4.1.0"
-  testImplementation "io.vertx:vertx-lang-kotlin-coroutines:4.1.0"
+  testImplementation "io.vertx:vertx-core:4.1.1"
+  testImplementation "io.vertx:vertx-lang-kotlin:4.1.1"
+  testImplementation "io.vertx:vertx-lang-kotlin-coroutines:4.1.1"
 
-  testImplementation "io.vertx:vertx-junit5:4.1.0"
+  testImplementation "io.vertx:vertx-junit5:4.1.1"
 }
 
 test {
