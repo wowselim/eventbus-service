@@ -4,7 +4,7 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.10"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.20"
   }
 }
 
@@ -13,7 +13,7 @@ allprojects {
   apply plugin: 'maven-publish'
 
   group 'co.selim.ebservice'
-  version '2.0.1'
+  version '2.0.2'
 
   java {
     withSourcesJar()
