@@ -9,7 +9,7 @@ repositories {
 
 dependencies {
   testImplementation "org.jetbrains.kotlin:kotlin-stdlib"
-  testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1"
+  testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1-native-mt"
   testImplementation project(':core')
   kaptTest project(':codegen')
 
