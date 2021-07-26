@@ -13,7 +13,7 @@ dependencies {
   testImplementation project(':core')
   kaptTest project(':codegen')
 
-  testImplementation "io.vertx:vertx-core:4.1.1"
+  testImplementation "io.vertx:vertx-core:4.1.2"
   testImplementation "io.vertx:vertx-lang-kotlin:4.1.1"
   testImplementation "io.vertx:vertx-lang-kotlin-coroutines:4.1.1"
 
