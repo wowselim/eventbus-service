@@ -8,7 +8,7 @@ repositories {
 
 dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib"
-  implementation "io.vertx:vertx-core:4.1.3"
+  implementation "io.vertx:vertx-core:4.2.2"
   api project(':annotation')
 }
 
