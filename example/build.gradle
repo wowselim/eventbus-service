@@ -14,6 +14,6 @@ dependencies {
   kapt project(':codegen')
 
   implementation "io.vertx:vertx-core:4.1.3"
-  implementation "io.vertx:vertx-lang-kotlin:4.1.3"
+  implementation "io.vertx:vertx-lang-kotlin:4.2.4"
   implementation "io.vertx:vertx-lang-kotlin-coroutines:4.1.3"
 }
