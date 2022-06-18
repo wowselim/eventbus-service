@@ -6,6 +6,9 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.metadata.*
 import kotlinx.metadata.KmClassifier
+import kotlinx.metadata.KmFunction
+import kotlinx.metadata.KmType
+import kotlinx.metadata.KmValueParameter
 import javax.annotation.processing.AbstractProcessor
 import javax.annotation.processing.RoundEnvironment
 import javax.annotation.processing.SupportedAnnotationTypes
@@ -27,7 +30,7 @@ class ServiceProcessor : AbstractProcessor() {
     val typeElements = ElementFilter.typesIn(elements)
 
     val services = typeElements.map { typeElement ->
-      val kmClass = typeElement.toImmutableKmClass()
+      val kmClass = typeElement.toKmClass()
       if (!kmClass.isInterface) {
         logError("Only interfaces are supported by ebservice", typeElement)
         error("Only interfaces are supported by ebservice")
@@ -62,7 +65,7 @@ class ServiceProcessor : AbstractProcessor() {
     return true
   }
 
-  private fun Sequence<ImmutableKmFunction>.extractFunctions(): Sequence<Function> {
+  private fun Sequence<KmFunction>.extractFunctions(): Sequence<Function> {
     return map { kmFunction ->
       if (!kmFunction.isSuspend) {
         logError("Function ${kmFunction.name} must be suspending")
@@ -78,7 +81,7 @@ class ServiceProcessor : AbstractProcessor() {
           }
         }
         .filter { parameter ->
-          val classifier = parameter.type!!.classifier
+          val classifier = parameter.type.classifier
           classifier is KmClassifier.Class || classifier is KmClassifier.TypeAlias
         }
         .toFunctionParameters()
@@ -88,9 +91,9 @@ class ServiceProcessor : AbstractProcessor() {
     }
   }
 
-  private fun Sequence<ImmutableKmValueParameter>.toFunctionParameters(): Sequence<Parameter> {
+  private fun Sequence<KmValueParameter>.toFunctionParameters(): Sequence<Parameter> {
     return map { kmValueParameter ->
-      val type = kmValueParameter.type!!
+      val type = kmValueParameter.type
       Parameter(kmValueParameter.name, type.toTypeName())
     }
   }
@@ -99,7 +102,7 @@ class ServiceProcessor : AbstractProcessor() {
     processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, msg, element)
   }
 
-  private fun ImmutableKmType.toTypeName(): TypeName {
+  private fun KmType.toTypeName(): TypeName {
     val params: List<TypeName> = arguments.mapNotNull { typeProjection ->
       typeProjection.type?.toTypeName()?.copy(nullable = typeProjection.type!!.isNullable)
     }

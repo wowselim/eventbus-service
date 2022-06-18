@@ -4,8 +4,13 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.30"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0"
   }
+}
+
+ext {
+  vertxVersion = "4.3.1"
+  coroutinesVersion = "1.6.2"
 }
 
 allprojects {
@@ -24,10 +29,10 @@ allprojects {
   }
 
   compileKotlin {
-    kotlinOptions.jvmTarget = '1.8'
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
   }
 
   compileTestKotlin {
-    kotlinOptions.jvmTarget = '1.8'
+    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
   }
 }
