@@ -34,7 +34,6 @@ class ServiceProcessor : AbstractProcessor() {
       val kmClass = typeElement.toKmClass()
       if (!kmClass.isInterface) {
         logError("Only interfaces are supported by ebservice", typeElement)
-        error("Only interfaces are supported by ebservice")
       }
 
       val functions = kmClass.functions
@@ -70,7 +69,6 @@ class ServiceProcessor : AbstractProcessor() {
     return map { kmFunction ->
       if (kmFunction.returnType.toTypeName() != Unit::class.asTypeName() && !kmFunction.isSuspend) {
         logError("Function ${kmFunction.name} must be suspending")
-        error("Function ${kmFunction.name} must be suspending")
       }
 
       val parameters = kmFunction.valueParameters
@@ -78,7 +76,6 @@ class ServiceProcessor : AbstractProcessor() {
         .onEach { parameter ->
           if (parameter.varargElementType != null) {
             logError("Vararg parameters are not supported by ebservice")
-            error("Vararg parameters are not supported by ebservice")
           }
         }
         .filter { parameter ->
