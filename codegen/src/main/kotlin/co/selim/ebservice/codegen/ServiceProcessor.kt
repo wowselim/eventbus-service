@@ -4,6 +4,7 @@ import co.selim.ebservice.annotation.EventBusService
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
+import com.squareup.kotlinpoet.asTypeName
 import com.squareup.kotlinpoet.metadata.*
 import kotlinx.metadata.KmClassifier
 import kotlinx.metadata.KmFunction
@@ -67,7 +68,7 @@ class ServiceProcessor : AbstractProcessor() {
 
   private fun Sequence<KmFunction>.extractFunctions(): Sequence<Function> {
     return map { kmFunction ->
-      if (!kmFunction.isSuspend) {
+      if (kmFunction.returnType.toTypeName() != Unit::class.asTypeName() && !kmFunction.isSuspend) {
         logError("Function ${kmFunction.name} must be suspending")
         error("Function ${kmFunction.name} must be suspending")
       }
@@ -87,7 +88,7 @@ class ServiceProcessor : AbstractProcessor() {
         .toFunctionParameters()
         .toSet()
 
-      Function(kmFunction.name, kmFunction.returnType.toTypeName(), parameters)
+      Function(kmFunction.name, kmFunction.returnType.toTypeName(), parameters, kmFunction.isSuspend)
     }
   }
 

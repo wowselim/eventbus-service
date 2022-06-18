@@ -9,7 +9,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
-import org.junit.jupiter.api.Assertions
+import kotlinx.coroutines.sync.Mutex
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
@@ -20,6 +21,8 @@ import java.util.concurrent.TimeUnit
 interface TestService {
   suspend fun getString(): String
   suspend fun getResultWithRequest(request: String): Result
+  suspend fun callSuspending(request: List<Int>)
+  fun call(request: Int)
 
   sealed class Result
   object Success : Result()
@@ -46,7 +49,7 @@ class ServiceTest(private val vertx: Vertx) {
 
     val message = testService.getString()
 
-    Assertions.assertEquals("Hello World", message)
+    assertEquals("Hello World", message)
   }
 
   @Test
@@ -63,7 +66,43 @@ class ServiceTest(private val vertx: Vertx) {
       .launchIn(scope)
 
     val result = testService.getResultWithRequest("Hello World")
-    Assertions.assertEquals(TestService.Success, result)
+    assertEquals(TestService.Success, result)
+  }
+
+  @Test
+  fun `suspending one way request is sent`() = runTest {
+    val mutex = Mutex(true)
+    val testService = TestService.create(vertx)
+    lateinit var receivedNumbers: List<Int>
+    vertx.callSuspendingRequests
+      .onEach { numbers ->
+        receivedNumbers = numbers
+        mutex.unlock()
+      }
+      .launchIn(scope)
+
+    val sentNumbers = listOf(1, 2, 3)
+    testService.callSuspending(sentNumbers)
+    mutex.lock()
+    assertEquals(sentNumbers, receivedNumbers)
+  }
+
+  @Test
+  fun `non suspending one way request is sent`() = runTest {
+    val mutex = Mutex(true)
+    val testService = TestService.create(vertx)
+    var receivedNumber = 0
+    vertx.callRequests
+      .onEach { number ->
+        receivedNumber = number
+        mutex.unlock()
+      }
+      .launchIn(scope)
+
+    val sentNumber = 1337
+    testService.call(sentNumber)
+    mutex.lock()
+    assertEquals(sentNumber, receivedNumber)
   }
 
   private fun runTest(block: suspend CoroutineScope.() -> Unit) {

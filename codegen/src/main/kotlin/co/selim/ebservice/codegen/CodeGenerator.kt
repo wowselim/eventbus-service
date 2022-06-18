@@ -57,26 +57,49 @@ private fun generateRequestsProperty(
   propertyName: String,
   visibility: Visibility,
 ): PropertySpec {
+  val isOneWayRequest = responseType == Unit::class.asTypeName()
   val getter = FunSpec.getterBuilder()
-    .addCode(
-      """
-      return eventBus()
-        .localConsumer<%T>(TOPIC + ".${functionName}")
-        .%M(this)
-        .%M()
-        .%M { %T<%T, %T>(it) }
-    """.trimIndent(),
-      requestType,
-      MemberName("io.vertx.kotlin.coroutines", "toReceiveChannel"),
-      MemberName("kotlinx.coroutines.flow", "receiveAsFlow"),
-      MemberName("kotlinx.coroutines.flow", "map"),
-      EventBusServiceRequestImpl::class.asTypeName(),
-      requestType,
-      responseType
-    )
+    .apply {
+      if (isOneWayRequest) {
+        addCode(
+          """
+            return eventBus()
+              .localConsumer<%T>("${'\$'}TOPIC.${functionName}")
+              .%M(this)
+              .%M()
+              .%M { it.body() }
+          """.trimIndent(),
+          requestType,
+          MemberName("io.vertx.kotlin.coroutines", "toReceiveChannel"),
+          MemberName("kotlinx.coroutines.flow", "receiveAsFlow"),
+          MemberName("kotlinx.coroutines.flow", "map"),
+        )
+      } else {
+        addCode(
+          """
+            return eventBus()
+              .localConsumer<%T>("${'\$'}TOPIC.${functionName}")
+              .%M(this)
+              .%M()
+              .%M { %T<%T, %T>(it) }
+          """.trimIndent(),
+          requestType,
+          MemberName("io.vertx.kotlin.coroutines", "toReceiveChannel"),
+          MemberName("kotlinx.coroutines.flow", "receiveAsFlow"),
+          MemberName("kotlinx.coroutines.flow", "map"),
+          EventBusServiceRequestImpl::class.asTypeName(),
+          requestType,
+          responseType
+        )
+      }
+    }
     .build()
 
-  val flowType = EventBusServiceRequest::class.asTypeName().parameterizedBy(requestType, responseType)
+  val flowType = if (isOneWayRequest) {
+    requestType
+  } else {
+    EventBusServiceRequest::class.asTypeName().parameterizedBy(requestType, responseType)
+  }
   return PropertySpec.builder(propertyName, Flow::class.asTypeName().parameterizedBy(flowType))
     .receiver(Vertx::class)
     .apply {
@@ -154,23 +177,36 @@ private fun generateFunction(function: Function, containerType: String?): FunSpe
     "$type($params)"
   } ?: function.parameters.map { it.name }.firstOrNull() ?: "Unit"
   return FunSpec.builder(function.name)
-    .addModifiers(KModifier.OVERRIDE, KModifier.SUSPEND)
+    .addModifiers(KModifier.OVERRIDE)
+    .apply { if (function.isSuspend) addModifiers(KModifier.SUSPEND) }
     .addParameters(
       function.parameters.map { parameter ->
         ParameterSpec(parameter.name, parameter.type)
       }
     )
     .returns(function.returnType)
-    .addCode(
-      """
-      return vertx.eventBus()
-        .request<%T>(TOPIC + ".${function.name}", $message, %M)
-        .%M()
-        .body()
-    """.trimIndent(),
-      function.returnType,
-      MemberName("co.selim.ebservice.core", "deliveryOptions"),
-      MemberName("io.vertx.kotlin.coroutines", "await")
-    )
+    .apply {
+      if (function.returnType != Unit::class.asTypeName()) {
+        addCode(
+          """
+          return vertx.eventBus()
+            .request<%T>("${'\$'}TOPIC.${function.name}", $message, %M)
+            .%M()
+            .body()
+          """.trimIndent(),
+          function.returnType,
+          MemberName("co.selim.ebservice.core", "deliveryOptions"),
+          MemberName("io.vertx.kotlin.coroutines", "await")
+        )
+      } else {
+        addCode(
+          """
+          vertx.eventBus()
+            .send("${'\$'}TOPIC.${function.name}", $message, %M)
+          """.trimIndent(),
+          MemberName("co.selim.ebservice.core", "deliveryOptions"),
+        )
+      }
+    }
     .build()
 }
