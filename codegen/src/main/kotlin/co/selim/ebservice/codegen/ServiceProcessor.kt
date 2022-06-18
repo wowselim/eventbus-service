@@ -71,11 +71,15 @@ class ServiceProcessor : AbstractProcessor() {
         logError("Function ${kmFunction.name} must be suspending")
       }
 
+      if(kmFunction.returnType.toTypeName() == Unit::class.asTypeName() && kmFunction.isSuspend) {
+        logInfo("Function ${kmFunction.name} doesn't need to be suspending")
+      }
+
       val parameters = kmFunction.valueParameters
         .asSequence()
         .onEach { parameter ->
           if (parameter.varargElementType != null) {
-            logError("Vararg parameters are not supported by ebservice")
+            logError("Vararg parameters in function ${kmFunction.name} are not supported by ebservice")
           }
         }
         .filter { parameter ->
@@ -98,6 +102,10 @@ class ServiceProcessor : AbstractProcessor() {
 
   private fun logError(msg: String, element: Element? = null) {
     processingEnv.messager.printMessage(Diagnostic.Kind.ERROR, msg, element)
+  }
+
+  private fun logInfo(msg: String, element: Element? = null) {
+    processingEnv.messager.printMessage(Diagnostic.Kind.NOTE, msg, element)
   }
 
   private fun KmType.toTypeName(): TypeName {
