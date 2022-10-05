@@ -58,7 +58,7 @@ implementation 'com.github.wowselim.eventbus-service:eventbus-service-core:<late
 ksp 'com.github.wowselim.eventbus-service:eventbus-service-codegen:<latestVersion>'
 ```
 
-The latest version can be found in the [releases section](https://github.com/wowselim/eventbus-service/releases).
+The latest version can be found in [releases](https://github.com/wowselim/eventbus-service/releases).
 
 ## Debugging
 
