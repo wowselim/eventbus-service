@@ -4,13 +4,13 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.0"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20"
   }
 }
 
 ext {
-  vertxVersion = "4.3.1"
-  coroutinesVersion = "1.6.2"
+  vertxVersion = "4.3.4"
+  coroutinesVersion = "1.6.4"
 }
 
 allprojects {
@@ -18,7 +18,7 @@ allprojects {
   apply plugin: 'maven-publish'
 
   group 'co.selim.ebservice'
-  version '2.0.3'
+  version '2.1.1'
 
   java {
     withSourcesJar()
