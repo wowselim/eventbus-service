@@ -10,9 +10,9 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${coroutinesVersion}"
   implementation "io.vertx:vertx-core:${vertxVersion}"
+  implementation "com.google.devtools.ksp:symbol-processing-api:1.7.20-1.0.6"
   def kotlinPoetVersion = "1.12.0"
   implementation "com.squareup:kotlinpoet:${kotlinPoetVersion}"
-  implementation "com.squareup:kotlinpoet-metadata:${kotlinPoetVersion}"
   implementation project(':core')
 }
 

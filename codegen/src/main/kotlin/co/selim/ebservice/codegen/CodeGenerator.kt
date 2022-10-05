@@ -5,30 +5,29 @@ import co.selim.ebservice.core.EventBusServiceRequest
 import co.selim.ebservice.core.EventBusServiceRequestImpl
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.metadata.KotlinPoetMetadataPreview
 import io.vertx.core.Vertx
 import kotlinx.coroutines.flow.Flow
 import java.util.*
 
 internal fun generateFile(
-  serviceName: ClassName
+  packageName: String,
+  simpleName: String,
 ): FileSpec.Builder {
   val topicProperty = PropertySpec.builder(
     "TOPIC", String::class, KModifier.PRIVATE, KModifier.CONST
   )
-    .initializer("%S", "${serviceName.packageName}.${serviceName.simpleName.lowercase(Locale.getDefault())}")
+    .initializer("%S", "$packageName.${simpleName.lowercase(Locale.getDefault())}")
     .build()
 
-  return FileSpec.builder(serviceName.packageName, serviceName.simpleName + "Impl")
+  return FileSpec.builder(packageName, simpleName + "Impl")
     .addProperty(topicProperty)
 }
 
-@KotlinPoetMetadataPreview
 internal fun generateRequestProperties(
   serviceName: ClassName,
-  functions: Set<Function>,
+  functions: Sequence<Function>,
   visibility: Visibility,
-): Iterable<PropertySpec> {
+): Sequence<PropertySpec> {
   return functions.map { function ->
     val requestType = when (function.parameters.size) {
       0 -> Unit::class.asTypeName()
@@ -111,12 +110,9 @@ private fun generateRequestsProperty(
     .build()
 }
 
-@KotlinPoetMetadataPreview
-internal fun generateServiceImpl(
-  service: Service
-): TypeSpec.Builder {
-  return TypeSpec.classBuilder(service.name.peerClass(service.name.simpleName + "Impl"))
-    .addSuperinterface(service.name)
+internal fun generateServiceImpl(serviceClassName: ClassName): TypeSpec.Builder {
+  return TypeSpec.classBuilder(serviceClassName.peerClass(serviceClassName.simpleName + "Impl"))
+    .addSuperinterface(serviceClassName)
     .primaryConstructor(
       FunSpec.constructorBuilder()
         .addParameter("vertx", Vertx::class)
@@ -128,11 +124,10 @@ internal fun generateServiceImpl(
     )
 }
 
-@KotlinPoetMetadataPreview
 internal fun generateFunctions(
   fileSpec: FileSpec.Builder,
   serviceSpec: TypeSpec.Builder,
-  functions: Set<Function>
+  functions: Sequence<Function>
 ) {
   functions.forEach { function ->
     val container = if (function.parameters.size > 1) {
@@ -143,7 +138,6 @@ internal fun generateFunctions(
   }
 }
 
-@KotlinPoetMetadataPreview
 private fun generateParameterContainer(
   functionName: String,
   parameters: Set<Parameter>
@@ -170,7 +164,6 @@ private fun generateParameterContainer(
 }
 
 
-@KotlinPoetMetadataPreview
 private fun generateFunction(function: Function, containerType: String?): FunSpec {
   val message: String = containerType?.let { type ->
     val params = function.parameters.joinToString { it.name }

@@ -1,6 +1,6 @@
 plugins {
   id 'org.jetbrains.kotlin.jvm'
-  id 'org.jetbrains.kotlin.kapt'
+  id 'com.google.devtools.ksp' version '1.7.20-1.0.6'
 }
 
 repositories {
@@ -11,9 +11,22 @@ dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib"
   implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${coroutinesVersion}"
   implementation project(':core')
-  kapt project(':codegen')
+  ksp project(':codegen')
 
   implementation "io.vertx:vertx-core:${vertxVersion}"
   implementation "io.vertx:vertx-lang-kotlin:${vertxVersion}"
   implementation "io.vertx:vertx-lang-kotlin-coroutines:${vertxVersion}"
+}
+
+sourceSets {
+  main {
+    java {
+      srcDir(file("build/generated/ksp/main/kotlin"))
+    }
+  }
+  test {
+    java {
+      srcDir(file("build/generated/ksp/test/kotlin"))
+    }
+  }
 }

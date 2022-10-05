@@ -1,6 +1,6 @@
 plugins {
   id 'org.jetbrains.kotlin.jvm'
-  id 'org.jetbrains.kotlin.kapt'
+  id 'com.google.devtools.ksp' version '1.7.20-1.0.6'
 }
 
 repositories {
@@ -11,7 +11,7 @@ dependencies {
   testImplementation "org.jetbrains.kotlin:kotlin-stdlib"
   testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${coroutinesVersion}"
   testImplementation project(':core')
-  kaptTest project(':codegen')
+  kspTest project(':codegen')
 
   testImplementation "io.vertx:vertx-core:${vertxVersion}"
   testImplementation "io.vertx:vertx-lang-kotlin:${vertxVersion}"
@@ -24,5 +24,18 @@ test {
   useJUnitPlatform()
   testLogging {
     events 'PASSED', 'FAILED', 'SKIPPED'
+  }
+}
+
+sourceSets {
+  main {
+    java {
+      srcDir(file("build/generated/ksp/main/kotlin"))
+    }
+  }
+  test {
+    java {
+      srcDir(file("build/generated/ksp/test/kotlin"))
+    }
   }
 }
