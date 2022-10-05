@@ -55,16 +55,15 @@ following dependencies:
 
 ```groovy
 implementation 'com.github.wowselim.eventbus-service:eventbus-service-core:<latestVersion>'
-kapt 'com.github.wowselim.eventbus-service:eventbus-service-codegen:<latestVersion>'
+ksp 'com.github.wowselim.eventbus-service:eventbus-service-codegen:<latestVersion>'
 ```
 
 The latest version can be found in the [releases section](https://github.com/wowselim/eventbus-service/releases).
 
 ## Debugging
 
-To debug the code generator, run the `kaptKotlin` task in the following way to be able to attach the debugger:
+To debug the code generator, run the `kspKotlin` task in the following way to be able to attach the debugger:
 
 ```bash
-./gradlew kaptKotlin --no-daemon -Dorg.gradle.debug=true -Dkotlin.compiler.execution.strategy="in-process" -Dkotlin.daemon.jvm.options=
-"-Xdebug,-Xrunjdwp:transport=dt_socket\,address=5005\,server=y\,suspend=n"
+./gradlew clean kspKotlin --no-daemon -Dorg.gradle.debug=true -Dkotlin.compiler.execution.strategy="in-process" -Dkotlin.daemon.jvm.options="-Xdebug,-Xrunjdwp:transport=dt_socket\,address=5005\,server=y\,suspend=n"
 ```
