@@ -13,6 +13,16 @@ unnecessary serialization and deserialization by
 making use of a special
 [EventBus codec](https://dev.to/sip3/how-to-extend-vert-x-eventbus-api-to-save-on-serialization-3akf).
 
+## News
+With the release of `3.0`, this library now uses ksp
+instead of kapt. You can check out the test or
+example modules in this repository to find out how
+to migrate your `build.gradle` file to ksp.
+
+If you want to stick to kapt, you can use version
+`2.1.1`. Only the ksp version will be supported in
+the future.
+
 ## Getting started
 Imagine we have a service that can divide a
 double by another double.
