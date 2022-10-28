@@ -6,10 +6,10 @@ import io.vertx.core.Vertx
 import io.vertx.junit5.VertxExtension
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.sync.Mutex
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -71,38 +71,33 @@ class ServiceTest(private val vertx: Vertx) {
 
   @Test
   fun `suspending one way request is sent`() = runTest {
-    val mutex = Mutex(true)
+    val channel = Channel<List<Int>>()
     val testService = TestService.create(vertx)
-    lateinit var receivedNumbers: List<Int>
     vertx.callSuspendingRequests
       .onEach { numbers ->
-        receivedNumbers = numbers
-        mutex.unlock()
+        channel.send(numbers)
       }
       .launchIn(scope)
 
     val sentNumbers = listOf(1, 2, 3)
     testService.callSuspending(sentNumbers)
-    mutex.lock()
-    assertEquals(sentNumbers, receivedNumbers)
+    val receive = channel.receive()
+    assertEquals(sentNumbers, receive)
   }
 
   @Test
   fun `non suspending one way request is sent`() = runTest {
-    val mutex = Mutex(true)
+    val channel = Channel<Int>()
     val testService = TestService.create(vertx)
-    var receivedNumber = 0
     vertx.callRequests
       .onEach { number ->
-        receivedNumber = number
-        mutex.unlock()
+        channel.send(number)
       }
       .launchIn(scope)
 
     val sentNumber = 1337
     testService.call(sentNumber)
-    mutex.lock()
-    assertEquals(sentNumber, receivedNumber)
+    assertEquals(sentNumber, channel.receive())
   }
 
   private fun runTest(block: suspend CoroutineScope.() -> Unit) {
