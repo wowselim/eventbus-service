@@ -74,9 +74,7 @@ class ServiceTest(private val vertx: Vertx) {
     val channel = Channel<List<Int>>()
     val testService = TestService.create(vertx)
     vertx.callSuspendingRequests
-      .onEach { numbers ->
-        channel.send(numbers)
-      }
+      .onEach(channel::send)
       .launchIn(scope)
 
     val sentNumbers = listOf(1, 2, 3)
@@ -90,9 +88,7 @@ class ServiceTest(private val vertx: Vertx) {
     val channel = Channel<Int>()
     val testService = TestService.create(vertx)
     vertx.callRequests
-      .onEach { number ->
-        channel.send(number)
-      }
+      .onEach(channel::send)
       .launchIn(scope)
 
     val sentNumber = 1337
