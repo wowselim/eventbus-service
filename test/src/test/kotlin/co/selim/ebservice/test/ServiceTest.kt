@@ -24,9 +24,9 @@ interface TestService {
   suspend fun callSuspending(request: List<Int>)
   fun call(request: Int)
 
-  sealed class Result
-  object Success : Result()
-  object Failure : Result()
+  sealed interface Result
+  object Success : Result
+  object Failure : Result
 
   companion object {
     fun create(vertx: Vertx): TestService = TestServiceImpl(vertx)

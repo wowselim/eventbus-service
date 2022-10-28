@@ -32,9 +32,9 @@ We might model this service as follows:
 interface DivisionService {
   suspend fun divide(dividend: Double, divisor: Double): Division
 
-  sealed class Division {
-    data class Success(val quotient: Double) : Division()
-    data class Error(val message: String) : Division()
+  sealed interface Division {
+    data class Success(val quotient: Double) : Division
+    data class Error(val message: String) : Division
   }
 }
 ```
