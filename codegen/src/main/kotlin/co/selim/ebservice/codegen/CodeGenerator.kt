@@ -20,6 +20,11 @@ internal fun generateFile(
     .build()
 
   return FileSpec.builder(packageName, simpleName + "Impl")
+    .addAnnotation(
+      AnnotationSpec.builder(Suppress::class)
+        .addMember("%S", "RedundantVisibilityModifier")
+        .build()
+    )
     .addProperty(topicProperty)
 }
 
@@ -189,7 +194,7 @@ private fun generateFunction(function: Function, containerType: String?): FunSpe
           """.trimIndent(),
           function.returnType,
           MemberName("co.selim.ebservice.core", "deliveryOptions"),
-          MemberName("io.vertx.kotlin.coroutines", "await")
+          MemberName("io.vertx.kotlin.coroutines", "await"),
         )
       } else {
         addCode(
