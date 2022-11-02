@@ -9,11 +9,17 @@ fun EventBus.initializeServiceCodec() {
   registerCodec(ServiceCodec)
 }
 
-val deliveryOptions = DeliveryOptions()
-  .apply {
-    isLocalOnly = true
-    codecName = ServiceCodec.name()
-  }
+fun EventBus.initializeServiceCodec(
+  customCodec: MessageCodec<*, *>,
+  customDeliveryOptions: DeliveryOptions = deliveryOptions.setCodecName(customCodec.name()),
+) {
+  registerCodec(customCodec)
+  deliveryOptions = customDeliveryOptions
+}
+
+var deliveryOptions: DeliveryOptions = DeliveryOptions()
+  .setLocalOnly(true)
+  .setCodecName(ServiceCodec.name())
 
 private object ServiceCodec : MessageCodec<Any, Any> {
   override fun decodeFromWire(pos: Int, buffer: Buffer?) = throw UnsupportedOperationException()

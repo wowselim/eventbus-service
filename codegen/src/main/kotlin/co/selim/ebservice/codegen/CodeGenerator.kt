@@ -68,7 +68,7 @@ private fun generateRequestsProperty(
         addCode(
           """
             return eventBus()
-              .localConsumer<%T>("${'\$'}TOPIC.${functionName}")
+              .consumer<%T>("${'\$'}TOPIC.${functionName}")
               .%M(this)
               .%M()
               .%M { it.body() }
@@ -82,7 +82,7 @@ private fun generateRequestsProperty(
         addCode(
           """
             return eventBus()
-              .localConsumer<%T>("${'\$'}TOPIC.${functionName}")
+              .consumer<%T>("${'\$'}TOPIC.${functionName}")
               .%M(this)
               .%M()
               .%M { %T<%T, %T>(it) }
