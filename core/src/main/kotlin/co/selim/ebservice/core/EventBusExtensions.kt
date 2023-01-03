@@ -11,10 +11,10 @@ fun EventBus.initializeServiceCodec() {
 
 fun EventBus.initializeServiceCodec(
   customCodec: MessageCodec<*, *>,
-  customDeliveryOptions: DeliveryOptions = deliveryOptions.setCodecName(customCodec.name()),
+  customDeliveryOptions: DeliveryOptions = deliveryOptions,
 ) {
   registerCodec(customCodec)
-  deliveryOptions = customDeliveryOptions
+  deliveryOptions = customDeliveryOptions.setCodecName(customCodec.name())
 }
 
 var deliveryOptions: DeliveryOptions = DeliveryOptions()
