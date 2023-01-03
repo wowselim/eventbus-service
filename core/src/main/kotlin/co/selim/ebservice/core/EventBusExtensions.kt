@@ -7,19 +7,22 @@ import io.vertx.core.eventbus.MessageCodec
 
 fun EventBus.initializeServiceCodec() {
   registerCodec(ServiceCodec)
+  deliveryOptions = defaultDeliveryOptions
 }
 
 fun EventBus.initializeServiceCodec(
   customCodec: MessageCodec<*, *>,
-  customDeliveryOptions: DeliveryOptions = deliveryOptions,
+  customDeliveryOptions: DeliveryOptions = defaultDeliveryOptions,
 ) {
   registerCodec(customCodec)
   deliveryOptions = customDeliveryOptions.setCodecName(customCodec.name())
 }
 
-var deliveryOptions: DeliveryOptions = DeliveryOptions()
+val defaultDeliveryOptions: DeliveryOptions = DeliveryOptions()
   .setLocalOnly(true)
   .setCodecName(ServiceCodec.name())
+
+var deliveryOptions: DeliveryOptions = defaultDeliveryOptions
 
 private object ServiceCodec : MessageCodec<Any, Any> {
   override fun decodeFromWire(pos: Int, buffer: Buffer?) = throw UnsupportedOperationException()

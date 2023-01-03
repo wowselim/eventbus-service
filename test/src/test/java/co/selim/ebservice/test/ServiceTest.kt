@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Timeout
 import org.junit.jupiter.api.extension.ExtendWith
@@ -100,11 +100,9 @@ class ServiceTest(private val vertx: Vertx) {
     runBlocking(vertx.dispatcher(), block)
   }
 
-  companion object {
-    @JvmStatic
-    @BeforeAll
-    fun setup(vertx: Vertx) {
-      vertx.eventBus().initializeServiceCodec()
-    }
+  @BeforeEach
+  fun setup() {
+    vertx.eventBus().unregisterCodec("ebservice")
+    vertx.eventBus().initializeServiceCodec()
   }
 }

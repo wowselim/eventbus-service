@@ -33,7 +33,7 @@ interface WeatherService {
 class ClusteredCustomCodecTest {
 
   @Test
-  fun deployVerticles(): Unit = runBlocking {
+  fun `test clustered custom codec`(): Unit = runBlocking {
     var serviceVertx: Vertx? = null
     var consumerVertx: Vertx? = null
     val weatherChannel = Channel<WeatherService.WeatherReport>(2)
