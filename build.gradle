@@ -28,23 +28,17 @@ allprojects {
     mavenCentral()
   }
 
-  def javaVersion = JavaVersion.VERSION_11
+  def javaVersion = 11
 
   compileJava {
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
-  }
-
-  compileTestJava {
-    sourceCompatibility = javaVersion
-    targetCompatibility = javaVersion
+    options.release.set(javaVersion)
   }
 
   compileKotlin {
-    kotlinOptions.jvmTarget = javaVersion
+    kotlinOptions.jvmTarget = "$javaVersion"
   }
 
   compileTestKotlin {
-    kotlinOptions.jvmTarget = javaVersion
+    kotlinOptions.jvmTarget = "$javaVersion"
   }
 }
