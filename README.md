@@ -52,6 +52,11 @@ This will generate two things
 Since the function has two parameters, we need to wrap them in a container. This is handled automatically
 via a generated data class (`DivideParameters`).
 
+Before running the application, we need to call
+`EventBus#initializeServiceCodec`, which also lets
+you add your own codecs in case you want the code
+to run in a clustered setup.
+
 This service is fully implemented in the `example` module.
 
 ## Limitations
