@@ -40,7 +40,7 @@ This will generate two things
   calls into EventBus requests.
 * An extension function that allows you to handle those requests:
   ```kotlin
-  fun DivisionService.Companion.divideRequests(
+  fun DivisionServiceRequests.divide(
     vertx: Vertx
   ): Flow<EventBusServiceRequest<DivideParameters, Division>>
   ```
