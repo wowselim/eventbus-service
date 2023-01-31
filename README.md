@@ -54,19 +54,19 @@ via a generated data class (`DivideParameters`).
 
 Before running the application, we need to call
 `EventBus#initializeServiceCodec`, which also lets
-you add your own codecs in case you want the code
+us add our own codecs in case we want the code
 to run in a clustered setup.
 
 This service is fully implemented in the `example` module.
 
 ## Limitations
 
-Due to the nature of Kotlin you need to be extra careful
+Due to the nature of Kotlin we need to be extra careful
 when handling sealed class / interface hierarchies that
 include `object` declarations as their identities will
 vary on the sending and receiving end.
 
-This means when using `when` expressions, you need to add
+This means when using `when` expressions, we need to add
 an otherwise unnecessary `is` to the objects:
 
 ```kotlin
