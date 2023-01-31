@@ -38,11 +38,15 @@ interface DivisionService
 This will generate two things
 * An implementation of this service (`DivisionServiceImpl`) that translates function
   calls into EventBus requests.
-* An extension function that allows you to handle those requests:
+* A function that allows you to handle those requests:
   ```kotlin
-  fun DivisionServiceRequests.divide(
+  object DivisionServiceRequests {
+
+  fun divide(
     vertx: Vertx
   ): Flow<EventBusServiceRequest<DivideParameters, Division>>
+
+  }
   ```
 
 Since the function has two parameters, we need to wrap them in a container. This is handled automatically
