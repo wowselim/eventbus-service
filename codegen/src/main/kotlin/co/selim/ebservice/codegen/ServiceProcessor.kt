@@ -27,7 +27,6 @@ class ServiceProcessor(
         val functions = classDeclaration.extractFunctions()
         val annotation = classDeclaration.getAnnotationsByType(EventBusService::class).first()
 
-
         val serviceClassName = classDeclaration.toClassName()
         val fileSpecBuilder = generateFile(serviceClassName.packageName, serviceClassName.simpleName)
         fileSpecBuilder.addType(
@@ -35,8 +34,14 @@ class ServiceProcessor(
             .apply { generateFunctions(fileSpecBuilder, this, functions) }
             .build()
         )
-        generateRequestProperties(serviceClassName, functions, annotation.propertyVisibility)
-          .forEach(fileSpecBuilder::addProperty)
+        fileSpecBuilder.addType(
+          generateServiceRequestsClass(serviceClassName, annotation.propertyVisibility)
+            .apply {
+              generateRequestFunctions(serviceClassName, functions, annotation.propertyVisibility)
+                .forEach(::addFunction)
+            }
+            .build()
+        )
 
         val fileSpec = fileSpecBuilder.build()
 

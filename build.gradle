@@ -18,7 +18,7 @@ allprojects {
   apply plugin: 'maven-publish'
 
   group 'co.selim.ebservice'
-  version '3.0.0'
+  version '4.0.0-RC1'
 
   java {
     withSourcesJar()
@@ -28,11 +28,17 @@ allprojects {
     mavenCentral()
   }
 
+  def javaVersion = 11
+
+  compileJava {
+    options.release.set(javaVersion)
+  }
+
   compileKotlin {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
+    kotlinOptions.jvmTarget = "$javaVersion"
   }
 
   compileTestKotlin {
-    kotlinOptions.jvmTarget = JavaVersion.VERSION_11
+    kotlinOptions.jvmTarget = "$javaVersion"
   }
 }

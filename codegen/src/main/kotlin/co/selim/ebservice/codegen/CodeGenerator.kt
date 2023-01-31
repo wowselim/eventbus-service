@@ -28,11 +28,11 @@ internal fun generateFile(
     .addProperty(topicProperty)
 }
 
-internal fun generateRequestProperties(
+internal fun generateRequestFunctions(
   serviceName: ClassName,
   functions: Sequence<Function>,
   visibility: Visibility,
-): Sequence<PropertySpec> {
+): Sequence<FunSpec> {
   return functions.map { function ->
     val requestType = when (function.parameters.size) {
       0 -> Unit::class.asTypeName()
@@ -44,32 +44,45 @@ internal fun generateRequestProperties(
         ClassName(serviceName.packageName, capitalizedName + "Parameters")
       }
     }
-    generateRequestsProperty(
+    generateRequestsFunction(
       function.name,
       requestType,
       function.returnType,
-      function.name + "Requests",
       visibility,
     )
   }
 }
 
-private fun generateRequestsProperty(
+private fun generateRequestsFunction(
   functionName: String,
   requestType: TypeName,
   responseType: TypeName,
-  propertyName: String,
   visibility: Visibility,
-): PropertySpec {
+): FunSpec {
   val isOneWayRequest = responseType == Unit::class.asTypeName()
-  val getter = FunSpec.getterBuilder()
+
+  val flowType = if (isOneWayRequest) {
+    requestType
+  } else {
+    EventBusServiceRequest::class.asTypeName().parameterizedBy(requestType, responseType)
+  }
+  val function = FunSpec.builder(functionName)
+    .returns(Flow::class.asTypeName().parameterizedBy(flowType))
+    .addParameter("vertx", Vertx::class)
+    .apply {
+      if (visibility == Visibility.INTERNAL) {
+        addModifiers(KModifier.INTERNAL)
+      }
+    }
+
+  val body = CodeBlock.builder()
     .apply {
       if (isOneWayRequest) {
-        addCode(
+        add(
           """
-            return eventBus()
-              .localConsumer<%T>("${'\$'}TOPIC.${functionName}")
-              .%M(this)
+            return vertx.eventBus()
+              .consumer<%T>("${'\$'}TOPIC.${functionName}")
+              .%M(vertx)
               .%M()
               .%M { it.body() }
           """.trimIndent(),
@@ -79,11 +92,11 @@ private fun generateRequestsProperty(
           MemberName("kotlinx.coroutines.flow", "map"),
         )
       } else {
-        addCode(
+        add(
           """
-            return eventBus()
-              .localConsumer<%T>("${'\$'}TOPIC.${functionName}")
-              .%M(this)
+            return vertx.eventBus()
+              .consumer<%T>("${'\$'}TOPIC.${functionName}")
+              .%M(vertx)
               .%M()
               .%M { %T<%T, %T>(it) }
           """.trimIndent(),
@@ -99,20 +112,7 @@ private fun generateRequestsProperty(
     }
     .build()
 
-  val flowType = if (isOneWayRequest) {
-    requestType
-  } else {
-    EventBusServiceRequest::class.asTypeName().parameterizedBy(requestType, responseType)
-  }
-  return PropertySpec.builder(propertyName, Flow::class.asTypeName().parameterizedBy(flowType))
-    .receiver(Vertx::class)
-    .apply {
-      if (visibility == Visibility.INTERNAL) {
-        addModifiers(KModifier.INTERNAL)
-      }
-    }
-    .getter(getter)
-    .build()
+  return function.addCode(body).build()
 }
 
 internal fun generateServiceImpl(serviceClassName: ClassName): TypeSpec.Builder {
@@ -127,6 +127,19 @@ internal fun generateServiceImpl(serviceClassName: ClassName): TypeSpec.Builder 
         .initializer("vertx")
         .build()
     )
+}
+
+internal fun generateServiceRequestsClass(
+  serviceClassName: ClassName,
+  visibility: Visibility
+): TypeSpec.Builder {
+
+  return TypeSpec.objectBuilder(serviceClassName.peerClass(serviceClassName.simpleName + "Requests"))
+    .apply {
+      if (visibility == Visibility.INTERNAL) {
+        addModifiers(KModifier.INTERNAL)
+      }
+    }
 }
 
 internal fun generateFunctions(
