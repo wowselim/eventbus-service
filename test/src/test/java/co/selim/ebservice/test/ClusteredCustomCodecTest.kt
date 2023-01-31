@@ -13,17 +13,21 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import java.io.Serializable
 
 @EventBusService
 interface WeatherService {
   suspend fun getWeather(city: String): WeatherReport
+  suspend fun getWeatherBalloon(message: String): WeatherBalloon
 
   sealed interface WeatherReport {
     data class Success(val description: String) : WeatherReport, Serializable
     data class Failure(val message: String) : WeatherReport, Serializable
   }
+
+  object WeatherBalloon : Serializable
 
   companion object {
     fun create(vertx: Vertx): WeatherService = WeatherServiceImpl(vertx)
@@ -37,10 +41,11 @@ class ClusteredCustomCodecTest {
     var serviceVertx: Vertx? = null
     var consumerVertx: Vertx? = null
     val weatherChannel = Channel<WeatherService.WeatherReport>(2)
+    val objectChannel = Channel<WeatherService.WeatherBalloon>(1)
 
     val weatherVerticle = object : CoroutineVerticle() {
       override suspend fun start() {
-        vertx.getWeatherRequests
+        WeatherServiceRequests.getWeather(vertx)
           .onEach { (request, reply) ->
             val weather = if (request == "Frankfurt am Main") {
               WeatherService.WeatherReport.Success("Sunny")
@@ -51,15 +56,26 @@ class ClusteredCustomCodecTest {
             reply(weather)
           }
           .launchIn(this)
+
+        WeatherServiceRequests.getWeatherBalloon(vertx)
+          .onEach { (_, reply) ->
+            reply(WeatherService.WeatherBalloon)
+          }
+          .launchIn(this)
       }
     }
 
     val weatherConsumerVerticle = object : CoroutineVerticle() {
       override suspend fun start() {
         val weatherService = WeatherService.create(vertx)
+
         with(weatherChannel) {
           send(weatherService.getWeather("Frankfurt am Main"))
           send(weatherService.getWeather("Berlin"))
+        }
+
+        with(objectChannel) {
+          send(weatherService.getWeatherBalloon("Kaboom"))
         }
       }
     }
@@ -75,6 +91,7 @@ class ClusteredCustomCodecTest {
 
       assertEquals(WeatherService.WeatherReport.Success("Sunny"), weatherChannel.receive())
       assertEquals(WeatherService.WeatherReport.Failure("Unknown city 'Berlin'"), weatherChannel.receive())
+      assertNotEquals(WeatherService.WeatherBalloon, objectChannel.receive())
     } finally {
       serviceVertx?.run { close().await() }
       consumerVertx?.run { close().await() }

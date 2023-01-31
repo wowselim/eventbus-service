@@ -25,7 +25,7 @@ interface MathService {
 
 class DivisionVerticle : CoroutineVerticle() {
   override suspend fun start() {
-    vertx.divideRequests
+    MathServiceRequests.divide(vertx)
       .onEach { (request, reply) ->
         val (dividend, divisor) = request
         reply(
@@ -37,7 +37,7 @@ class DivisionVerticle : CoroutineVerticle() {
         )
       }.launchIn(this)
 
-    vertx.addRequests
+    MathServiceRequests.add(vertx)
       .onEach { (request, reply) ->
         val (addendA, addendB) = request
         reply(addendA + addendB)
@@ -61,7 +61,6 @@ class SampleVerticle : CoroutineVerticle() {
       is MathService.Division.Success -> println(divisionResult)
       is MathService.Division.Error -> System.err.println(divisionResult)
     }
-
   }
 }
 

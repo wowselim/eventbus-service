@@ -43,7 +43,7 @@ class ServiceTest(private val vertx: Vertx) {
   @Test
   fun `reply is sent`() = runTest {
     val testService = TestService.create(vertx)
-    vertx.getStringRequests
+    TestServiceRequests.getString(vertx)
       .onEach { (_, reply) -> reply("Hello World") }
       .launchIn(scope)
 
@@ -55,7 +55,7 @@ class ServiceTest(private val vertx: Vertx) {
   @Test
   fun `request is sent`() = runTest {
     val testService = TestService.create(vertx)
-    vertx.getResultWithRequestRequests
+    TestServiceRequests.getResultWithRequest(vertx)
       .onEach { (request, reply) ->
         if (request != "Hello World") {
           reply(TestService.Failure)
@@ -73,7 +73,7 @@ class ServiceTest(private val vertx: Vertx) {
   fun `suspending one way request is sent`() = runTest {
     val channel = Channel<List<Int>>()
     val testService = TestService.create(vertx)
-    vertx.callSuspendingRequests
+    TestServiceRequests.callSuspending(vertx)
       .onEach(channel::send)
       .launchIn(scope)
 
@@ -87,7 +87,7 @@ class ServiceTest(private val vertx: Vertx) {
   fun `non suspending one way request is sent`() = runTest {
     val channel = Channel<Int>()
     val testService = TestService.create(vertx)
-    vertx.callRequests
+    TestServiceRequests.call(vertx)
       .onEach(channel::send)
       .launchIn(scope)
 

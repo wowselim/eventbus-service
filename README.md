@@ -13,16 +13,6 @@ unnecessary serialization and deserialization by
 making use of a special
 [EventBus codec](https://dev.to/sip3/how-to-extend-vert-x-eventbus-api-to-save-on-serialization-3akf).
 
-## News
-With the release of `3.0`, this library now uses ksp
-instead of kapt. You can check out the test or
-example modules in this repository to find out how
-to migrate your `build.gradle` file to ksp.
-
-If you want to stick to kapt, you can use version
-`2.1.1`. Only the ksp version will be supported in
-the future.
-
 ## Getting started
 Imagine we have a service that can divide a
 double by another double.
@@ -48,15 +38,34 @@ interface DivisionService
 This will generate two things
 * An implementation of this service (`DivisionServiceImpl`) that translates function
   calls into EventBus requests.
-* An extension property that allows you to handle those requests:
+* An extension function that allows you to handle those requests:
   ```kotlin
-  val Vertx.divideRequests: Flow<EventBusServiceRequest<DivideParameters, Division>>
+  fun DivisionService.Companion.divideRequests(
+    vertx: Vertx
+  ): Flow<EventBusServiceRequest<DivideParameters, Division>>
   ```
 
 Since the function has two parameters, we need to wrap them in a container. This is handled automatically
 via a generated data class (`DivideParameters`).
 
 This service is fully implemented in the `example` module.
+
+## Limitations
+
+Due to the nature of Kotlin you need to be extra careful
+when handling sealed class / interface hierarchies that
+include `object` declarations as their identities will
+vary on the sending and receiving end.
+
+This means when using `when` expressions, you need to add
+an otherwise unnecessary `is` to the objects:
+
+```kotlin
+when (response) {
+    is SomeDataClass -> // …
+    is SomeObject -> // here we need is!
+}
+```
 
 ## Adding it to your project
 
