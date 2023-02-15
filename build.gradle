@@ -27,28 +27,4 @@ allprojects {
   repositories {
     mavenCentral()
   }
-
-  def javaVersion = 17
-
-  java {
-    toolchain {
-      languageVersion = JavaLanguageVersion.of(javaVersion)
-    }
-  }
-
-  kotlin {
-    jvmToolchain(javaVersion)
-  }
-}
-
-task('check11', type: Test) {
-  javaLauncher = javaToolchains.launcherFor {
-    languageVersion = JavaLanguageVersion.of(11)
-  }
-}
-
-task('check17', type: Test) {
-  javaLauncher = javaToolchains.launcherFor {
-    languageVersion = JavaLanguageVersion.of(17)
-  }
 }
