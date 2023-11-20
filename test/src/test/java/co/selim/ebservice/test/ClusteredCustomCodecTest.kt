@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Test
 import java.io.Serializable
 
@@ -93,7 +92,7 @@ class ClusteredCustomCodecTest {
 
       assertEquals(WeatherService.WeatherReport.Success("Sunny"), weatherChannel.receive())
       assertEquals(WeatherService.WeatherReport.Failure("Unknown city 'Berlin'"), weatherChannel.receive())
-      assertNotEquals(WeatherService.WeatherBalloon, objectChannel.receive())
+      assertEquals(WeatherService.WeatherBalloon, objectChannel.receive())
     } finally {
       serviceVertx?.run { close().coAwait() }
       consumerVertx?.run { close().coAwait() }
