@@ -175,13 +175,13 @@ public final class FakeClusterManager implements ClusterManager {
 
   @Override
   public void join(Promise<Void> promise) {
-    vertx.executeBlocking(fut -> {
+    vertx.<Void>executeBlocking(() -> {
       synchronized (this) {
         this.nodeID = UUID.randomUUID().toString();
         doJoin(nodeID, this);
       }
-      fut.complete();
-    }, promise);
+      return null;
+    }).onComplete(promise);
   }
 
   @Override
@@ -197,7 +197,7 @@ public final class FakeClusterManager implements ClusterManager {
       events.add(new RegistrationUpdateEvent(address, current));
     });
     fireRegistrationUpdateEvents(events, true);
-    vertx.executeBlocking(fut -> {
+    vertx.<Void>executeBlocking(() -> {
       synchronized (this) {
         if (nodeID != null) {
           nodeInfos.remove(nodeID);
@@ -208,8 +208,8 @@ public final class FakeClusterManager implements ClusterManager {
           this.nodeID = null;
         }
       }
-      fut.complete();
-    }, promise);
+      return null;
+    }).onComplete(promise);
   }
 
   private synchronized void fireRegistrationUpdateEvents(List<RegistrationUpdateEvent> events, boolean skipThisNode) {

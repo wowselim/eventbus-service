@@ -59,23 +59,6 @@ to run in a clustered setup.
 
 This service is fully implemented in the `example` module.
 
-## Limitations
-
-Due to the nature of Kotlin we need to be extra careful
-when handling sealed class / interface hierarchies that
-include `object` declarations as their identities will
-vary on the sending and receiving end.
-
-This means when using `when` expressions, we need to add
-an otherwise unnecessary `is` to the objects:
-
-```kotlin
-when (response) {
-    is SomeDataClass -> // …
-    is SomeObject -> // here we need is!
-}
-```
-
 ## Adding it to your project
 
 Add the [JitPack repository](https://jitpack.io/#wowselim/eventbus-service) to your build script and include the

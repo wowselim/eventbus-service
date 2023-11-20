@@ -7,7 +7,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.VertxOptions
 import io.vertx.core.eventbus.DeliveryOptions
 import io.vertx.kotlin.coroutines.CoroutineVerticle
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -27,7 +27,9 @@ interface WeatherService {
     data class Failure(val message: String) : WeatherReport, Serializable
   }
 
-  object WeatherBalloon : Serializable
+  object WeatherBalloon : Serializable {
+    private fun readResolve(): Any = WeatherBalloon
+  }
 
   companion object {
     fun create(vertx: Vertx): WeatherService = WeatherServiceImpl(vertx)
@@ -81,20 +83,20 @@ class ClusteredCustomCodecTest {
     }
 
     try {
-      serviceVertx = Vertx.clusteredVertx(VertxOptions().setClusterManager(FakeClusterManager())).await()
+      serviceVertx = Vertx.clusteredVertx(VertxOptions().setClusterManager(FakeClusterManager())).coAwait()
       serviceVertx.eventBus().initializeServiceCodec(ObjectCodec, DeliveryOptions().setLocalOnly(false))
-      serviceVertx.deployVerticle(weatherVerticle, DeploymentOptions()).await()
+      serviceVertx.deployVerticle(weatherVerticle, DeploymentOptions()).coAwait()
 
-      consumerVertx = Vertx.clusteredVertx(VertxOptions().setClusterManager(FakeClusterManager())).await()
+      consumerVertx = Vertx.clusteredVertx(VertxOptions().setClusterManager(FakeClusterManager())).coAwait()
       consumerVertx.eventBus().initializeServiceCodec(ObjectCodec, DeliveryOptions().setLocalOnly(false))
-      consumerVertx.deployVerticle(weatherConsumerVerticle, DeploymentOptions()).await()
+      consumerVertx.deployVerticle(weatherConsumerVerticle, DeploymentOptions()).coAwait()
 
       assertEquals(WeatherService.WeatherReport.Success("Sunny"), weatherChannel.receive())
       assertEquals(WeatherService.WeatherReport.Failure("Unknown city 'Berlin'"), weatherChannel.receive())
       assertNotEquals(WeatherService.WeatherBalloon, objectChannel.receive())
     } finally {
-      serviceVertx?.run { close().await() }
-      consumerVertx?.run { close().await() }
+      serviceVertx?.run { close().coAwait() }
+      consumerVertx?.run { close().coAwait() }
     }
   }
 }

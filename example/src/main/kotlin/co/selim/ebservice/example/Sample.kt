@@ -4,7 +4,7 @@ import co.selim.ebservice.annotation.EventBusService
 import co.selim.ebservice.core.initializeServiceCodec
 import io.vertx.core.Vertx
 import io.vertx.kotlin.coroutines.CoroutineVerticle
-import io.vertx.kotlin.coroutines.await
+import io.vertx.kotlin.coroutines.coAwait
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -67,7 +67,7 @@ class SampleVerticle : CoroutineVerticle() {
 suspend fun main() {
   val vertx = Vertx.vertx()
   vertx.eventBus().initializeServiceCodec()
-  vertx.deployVerticle(DivisionVerticle::class.java.name).await()
-  vertx.deployVerticle(SampleVerticle::class.java.name).await()
-  vertx.close().await()
+  vertx.deployVerticle(DivisionVerticle::class.java.name).coAwait()
+  vertx.deployVerticle(SampleVerticle::class.java.name).coAwait()
+  vertx.close().coAwait()
 }

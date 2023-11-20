@@ -207,7 +207,7 @@ private fun generateFunction(function: Function, containerType: String?): FunSpe
           """.trimIndent(),
           function.returnType,
           MemberName("co.selim.ebservice.core", "deliveryOptions"),
-          MemberName("io.vertx.kotlin.coroutines", "await"),
+          MemberName("io.vertx.kotlin.coroutines", "coAwait"),
         )
       } else {
         addCode(
