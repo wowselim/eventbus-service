@@ -4,12 +4,12 @@ buildscript {
   }
 
   dependencies {
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10"
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20"
   }
 }
 
 ext {
-  vertxVersion = "4.4.5"
+  vertxVersion = "4.5.0"
   coroutinesVersion = "1.7.3"
 }
 
