@@ -24,7 +24,7 @@ object ObjectCodec : MessageCodec<Any, Any> {
     buffer.appendBytes(byteArrayOutputStream.toByteArray())
   }
 
-  override fun transform(s: Any?) = s
+  override fun transform(s: Any?) = throw UnsupportedOperationException("This should not be called by the tests")
   override fun name() = "custom-codec"
   override fun systemCodecID(): Byte = -1
 }

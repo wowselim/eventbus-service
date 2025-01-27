@@ -25,8 +25,8 @@ interface TestService {
   fun call(request: Int)
 
   sealed interface Result
-  object Success : Result
-  object Failure : Result
+  data object Success : Result
+  data object Failure : Result
 
   companion object {
     fun create(vertx: Vertx): TestService = TestServiceImpl(vertx)
