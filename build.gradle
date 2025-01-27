@@ -17,8 +17,8 @@ allprojects {
   apply plugin: 'kotlin'
   apply plugin: 'maven-publish'
 
-  group 'co.selim.ebservice'
-  version '4.0.0-RC1'
+  group = 'co.selim.ebservice'
+  version = '4.0.0-RC1'
 
   java {
     withSourcesJar()
