@@ -7,7 +7,9 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import io.vertx.core.Vertx
 import kotlinx.coroutines.flow.Flow
+import java.time.Instant
 import java.util.*
+import javax.annotation.processing.Generated
 
 internal fun generateFile(
   packageName: String,
@@ -116,7 +118,13 @@ private fun generateRequestsFunction(
 }
 
 internal fun generateServiceImpl(serviceClassName: ClassName): TypeSpec.Builder {
+  val generatedAnnotation = AnnotationSpec.builder(Generated::class)
+    .addMember("%S", ServiceProcessor::class.java.name)
+    .addMember("date = %S", Instant.now().toString())
+    .build()
+
   return TypeSpec.classBuilder(serviceClassName.peerClass(serviceClassName.simpleName + "Impl"))
+    .addAnnotation(generatedAnnotation)
     .addSuperinterface(serviceClassName)
     .primaryConstructor(
       FunSpec.constructorBuilder()
