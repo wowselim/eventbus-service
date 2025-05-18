@@ -11,9 +11,9 @@
 
 package co.selim.ebservice.test;
 
-import io.vertx.core.Promise;
+import io.vertx.core.Completable;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.VertxInternal;
+import io.vertx.core.internal.VertxInternal;
 import io.vertx.core.shareddata.AsyncMap;
 import io.vertx.core.shareddata.Counter;
 import io.vertx.core.shareddata.Lock;
@@ -27,13 +27,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Predicate;
-
-import static java.util.stream.Collectors.collectingAndThen;
-import static java.util.stream.Collectors.toList;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
-public final class FakeClusterManager implements ClusterManager {
+public class FakeClusterManager implements ClusterManager {
 
   private static final Map<String, FakeClusterManager> nodes = Collections.synchronizedMap(new LinkedHashMap<>());
 
@@ -47,13 +43,21 @@ public final class FakeClusterManager implements ClusterManager {
 
   private volatile String nodeID;
   private NodeListener nodeListener;
+  private RegistrationListener registrationListener;
   private VertxInternal vertx;
-  private NodeSelector nodeSelector;
+  private volatile long getRegistrationsLatency = 0L;
 
   @Override
-  public void init(Vertx vertx, NodeSelector nodeSelector) {
+  public void init(Vertx vertx) {
     this.vertx = (VertxInternal) vertx;
-    this.nodeSelector = nodeSelector;
+  }
+
+  public long getRegistrationsLatency() {
+    return getRegistrationsLatency;
+  }
+
+  public void getRegistrationsLatency(long getRegistrationsLatency) {
+    this.getRegistrationsLatency = getRegistrationsLatency;
   }
 
   private static void doJoin(String nodeID, FakeClusterManager node) {
@@ -106,8 +110,8 @@ public final class FakeClusterManager implements ClusterManager {
   }
 
   @Override
-  public <K, V> void getAsyncMap(String name, Promise<AsyncMap<K, V>> promise) {
-    promise.complete(asyncMaps.computeIfAbsent(name, n -> new LocalAsyncMapImpl(vertx)));
+  public <K, V> void getAsyncMap(String name, Completable<AsyncMap<K, V>> promise) {
+    promise.succeed(asyncMaps.computeIfAbsent(name, n -> new LocalAsyncMapImpl(vertx)));
   }
 
   @Override
@@ -120,17 +124,18 @@ public final class FakeClusterManager implements ClusterManager {
         map = prevMap;
       }
     }
-    return (Map<K, V>) map;
+    Map<K, V> theMap = map;
+    return theMap;
   }
 
   @Override
-  public void getLockWithTimeout(String name, long timeout, Promise<Lock> promise) {
+  public void getLockWithTimeout(String name, long timeout, Completable<Lock> promise) {
     localAsyncLocks.acquire(vertx.getOrCreateContext(), name, timeout).onComplete(promise);
   }
 
   @Override
-  public void getCounter(String name, Promise<Counter> promise) {
-    promise.complete(new AsynchronousCounter(vertx, counters.computeIfAbsent(name, k -> new AtomicLong())));
+  public void getCounter(String name, Completable<Counter> promise) {
+    promise.succeed(new AsynchronousCounter(vertx, counters.computeIfAbsent(name, k -> new AtomicLong())));
   }
 
   @Override
@@ -153,9 +158,9 @@ public final class FakeClusterManager implements ClusterManager {
   }
 
   @Override
-  public void setNodeInfo(NodeInfo nodeInfo, Promise<Void> promise) {
+  public void setNodeInfo(NodeInfo nodeInfo, Completable<Void> promise) {
     nodeInfos.put(nodeID, nodeInfo);
-    promise.complete();
+    promise.succeed();
   }
 
   @Override
@@ -164,17 +169,17 @@ public final class FakeClusterManager implements ClusterManager {
   }
 
   @Override
-  public void getNodeInfo(String nodeId, Promise<NodeInfo> promise) {
+  public void getNodeInfo(String nodeId, Completable<NodeInfo> promise) {
     NodeInfo result = nodeInfos.get(nodeId);
     if (result != null) {
-      promise.complete(result);
+      promise.succeed(result);
     } else {
       promise.fail("Not a member of the cluster");
     }
   }
 
   @Override
-  public void join(Promise<Void> promise) {
+  public void join(Completable<Void> promise) {
     vertx.<Void>executeBlocking(() -> {
       synchronized (this) {
         this.nodeID = UUID.randomUUID().toString();
@@ -185,14 +190,19 @@ public final class FakeClusterManager implements ClusterManager {
   }
 
   @Override
-  public void leave(Promise<Void> promise) {
+  public void leave(Completable<Void> promise) {
     List<RegistrationUpdateEvent> events = new ArrayList<>();
     registrations.keySet().forEach(address -> {
       List<RegistrationInfo> current = registrations.compute(address, (addr, infos) -> {
-        if (infos == null) return null;
-        return infos.stream()
-          .filter(info -> !info.nodeId().equals(nodeID))
-          .collect(collectingAndThen(toList(), list -> list.isEmpty() ? null : list));
+        List<RegistrationInfo> list = new ArrayList<>();
+        if (infos != null) {
+          for (RegistrationInfo info : infos) {
+            if (!info.nodeId().equals(nodeID)) {
+              list.add(info);
+            }
+          }
+        }
+        return list.isEmpty() ? null : list;
       });
       events.add(new RegistrationUpdateEvent(address, current));
     });
@@ -201,8 +211,8 @@ public final class FakeClusterManager implements ClusterManager {
       synchronized (this) {
         if (nodeID != null) {
           nodeInfos.remove(nodeID);
-          if (nodeListener != null) {
-            nodeListener = null;
+          if (registrationListener != null) {
+            registrationListener = null;
           }
           doLeave(nodeID);
           this.nodeID = null;
@@ -220,7 +230,7 @@ public final class FakeClusterManager implements ClusterManager {
       for (RegistrationUpdateEvent event : events) {
         FakeClusterManager clusterManager = nodes.get(nid);
         if (clusterManager != null && clusterManager.isActive()) {
-          clusterManager.nodeSelector.registrationsUpdated(event);
+          clusterManager.registrationListener.registrationsUpdated(event);
         }
       }
     }
@@ -232,39 +242,56 @@ public final class FakeClusterManager implements ClusterManager {
   }
 
   @Override
-  public void addRegistration(String address, RegistrationInfo registrationInfo, Promise<Void> promise) {
-    List<RegistrationInfo> current = registrations.compute(address, (addrr, infos) -> {
-      List<RegistrationInfo> res;
-      res = Objects.requireNonNullElseGet(infos, ArrayList::new);
-      res.add(registrationInfo);
-      return res;
-    });
-    promise.complete();
-    RegistrationUpdateEvent event = new RegistrationUpdateEvent(address, current);
-    fireRegistrationUpdateEvents(Collections.singletonList(event), false);
+  public void registrationListener(RegistrationListener registrationListener) {
+    this.registrationListener = registrationListener;
   }
 
   @Override
-  public void removeRegistration(String address, RegistrationInfo registrationInfo, Promise<Void> promise) {
+  public void addRegistration(String address, RegistrationInfo registrationInfo, Completable<Void> promise) {
     List<RegistrationInfo> current = registrations.compute(address, (addrr, infos) -> {
       List<RegistrationInfo> res;
       if (infos == null) {
-        res = null;
+        res = new ArrayList<>();
       } else {
-        res = infos.stream()
-          .filter(Predicate.isEqual(registrationInfo).negate())
-          .collect(collectingAndThen(toList(), list -> list.isEmpty() ? null : list));
+        res = new ArrayList<>(infos);
       }
+      res.add(registrationInfo);
       return res;
     });
-    promise.complete();
+    promise.succeed();
     RegistrationUpdateEvent event = new RegistrationUpdateEvent(address, current);
     fireRegistrationUpdateEvents(Collections.singletonList(event), false);
   }
 
   @Override
-  public void getRegistrations(String address, Promise<List<RegistrationInfo>> promise) {
-    promise.complete(registrations.get(address));
+  public void removeRegistration(String address, RegistrationInfo registrationInfo, Completable<Void> promise) {
+    List<RegistrationInfo> current = registrations.compute(address, (addrr, infos) -> {
+      List<RegistrationInfo> list = new ArrayList<>();
+      if (infos != null) {
+        for (RegistrationInfo info : infos) {
+          if (!Objects.equals(registrationInfo, info)) {
+            list.add(info);
+          }
+        }
+      }
+      return list.isEmpty() ? null : list;
+    });
+    promise.succeed();
+    RegistrationUpdateEvent event = new RegistrationUpdateEvent(address, current);
+    fireRegistrationUpdateEvents(Collections.singletonList(event), false);
+  }
+
+  @Override
+  public void getRegistrations(String address, Completable<List<RegistrationInfo>> promise) {
+    long delay = getRegistrationsLatency;
+    if (delay > 0L) {
+      vertx
+        .timer(delay)
+        .map(v -> registrations.get(address))
+        .onComplete(promise);
+    } else {
+      promise.succeed(registrations.get(address));
+    }
   }
 
   public static void reset() {
