@@ -18,6 +18,7 @@ dependencies {
   testImplementation "io.vertx:vertx-lang-kotlin-coroutines:${vertxVersion}"
 
   testImplementation "io.vertx:vertx-junit5:${vertxVersion}"
+  testImplementation "org.junit.platform:junit-platform-launcher"
 }
 
 test {
