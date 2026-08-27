@@ -1,6 +1,6 @@
 package co.selim.ebservice.test
 
-import co.selim.ebservice.annotation.EventBusService
+import co.selim.ebservice.core.EventBusService
 import co.selim.ebservice.core.initializeServiceCodec
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
@@ -25,7 +25,8 @@ interface WeatherService {
     data class Failure(val message: String) : WeatherReport, Serializable
   }
 
-  object WeatherBalloon : Serializable {
+  data object WeatherBalloon : Serializable {
+    @Suppress("UNUSED")
     private fun readResolve(): Any = WeatherBalloon
   }
 

@@ -1,14 +1,11 @@
 package co.selim.ebservice.codegen
 
-import co.selim.ebservice.annotation.EventBusService
+import co.selim.ebservice.core.EventBusService
 import com.google.devtools.ksp.KspExperimental
 import com.google.devtools.ksp.getAnnotationsByType
 import com.google.devtools.ksp.getDeclaredFunctions
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
-import com.squareup.kotlinpoet.asTypeName
-import com.squareup.kotlinpoet.ksp.toClassName
-import com.squareup.kotlinpoet.ksp.toTypeName
 
 class ServiceProcessor(
   private val logger: KSPLogger,
@@ -26,24 +23,9 @@ class ServiceProcessor(
 
         val functions = classDeclaration.extractFunctions()
         val annotation = classDeclaration.getAnnotationsByType(EventBusService::class).first()
+        val serviceName = classDeclaration.qualifiedName?.asString() ?: return@forEach
 
-        val serviceClassName = classDeclaration.toClassName()
-        val fileSpecBuilder = generateFile(serviceClassName.packageName, serviceClassName.simpleName)
-        fileSpecBuilder.addType(
-          generateServiceImpl(serviceClassName)
-            .apply { generateFunctions(fileSpecBuilder, this, functions) }
-            .build()
-        )
-        fileSpecBuilder.addType(
-          generateServiceRequestsClass(serviceClassName, annotation.propertyVisibility)
-            .apply {
-              generateRequestFunctions(serviceClassName, functions, annotation.propertyVisibility)
-                .forEach(::addFunction)
-            }
-            .build()
-        )
-
-        val fileSpec = fileSpecBuilder.build()
+        val fileContent = generateServiceFile(serviceName, functions, annotation.propertyVisibility)
 
         val dependencies = Dependencies(true, classDeclaration.containingFile!!)
         codeGenerator.createNewFile(
@@ -53,7 +35,7 @@ class ServiceProcessor(
         )
           .bufferedWriter()
           .use { writer ->
-            fileSpec.writeTo(writer)
+            writer.write(fileContent)
           }
       }
 
@@ -63,13 +45,13 @@ class ServiceProcessor(
   private fun KSClassDeclaration.extractFunctions(): Sequence<Function> {
     return getDeclaredFunctions()
       .map { function ->
-        val returnType = function.returnType!!.resolve().toTypeName()
+        val returnType = function.returnType!!.resolve().asTypeString()
 
-        if (returnType != Unit::class.asTypeName() && Modifier.SUSPEND !in function.modifiers) {
+        if (returnType != "kotlin.Unit" && Modifier.SUSPEND !in function.modifiers) {
           logger.error("Function ${function.simpleName} must be suspending")
         }
 
-        if (returnType == Unit::class.asTypeName() && Modifier.SUSPEND in function.modifiers) {
+        if (returnType == "kotlin.Unit" && Modifier.SUSPEND in function.modifiers) {
           logger.info("Function ${function.simpleName} doesn't need to be suspending")
         }
 
@@ -85,7 +67,7 @@ class ServiceProcessor(
 
         Function(
           function.simpleName.asString(),
-          function.returnType!!.resolve().toTypeName(),
+          returnType,
           parameters,
           Modifier.SUSPEND in function.modifiers
         )
@@ -94,8 +76,20 @@ class ServiceProcessor(
 
   private fun Sequence<KSValueParameter>.toFunctionParameters(): Sequence<Parameter> {
     return map { valueParameter ->
-      val type = valueParameter.type
-      Parameter(valueParameter.name!!.asString(), type.resolve().toTypeName())
+      val type = valueParameter.type.resolve().asTypeString()
+      Parameter(valueParameter.name!!.asString(), type)
     }
+  }
+
+  private fun KSType.asTypeString(): String = buildString {
+    append(declaration.qualifiedName?.asString() ?: declaration.simpleName.asString())
+    if (arguments.isNotEmpty()) {
+      append('<')
+      append(arguments.joinToString(", ") { argument ->
+        argument.type?.resolve()?.asTypeString() ?: "*"
+      })
+      append('>')
+    }
+    if (isMarkedNullable) append('?')
   }
 }

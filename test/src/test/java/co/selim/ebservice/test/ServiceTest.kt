@@ -1,6 +1,6 @@
 package co.selim.ebservice.test
 
-import co.selim.ebservice.annotation.EventBusService
+import co.selim.ebservice.core.EventBusService
 import co.selim.ebservice.core.initializeServiceCodec
 import io.vertx.core.Vertx
 import io.vertx.junit5.VertxExtension
@@ -19,90 +19,90 @@ import java.util.concurrent.TimeUnit
 
 @EventBusService
 interface TestService {
-  suspend fun getString(): String
-  suspend fun getResultWithRequest(request: String): Result
-  suspend fun callSuspending(request: List<Int>)
-  fun call(request: Int)
+    suspend fun getString(): String
+    suspend fun getResultWithRequest(request: String): Result
+    suspend fun callSuspending(request: List<Int>)
+    fun call(request: Int)
 
-  sealed interface Result
-  data object Success : Result
-  data object Failure : Result
+    sealed interface Result
+    data object Success : Result
+    data object Failure : Result
 
-  companion object {
-    fun create(vertx: Vertx): TestService = TestServiceImpl(vertx)
-  }
+    companion object {
+        fun create(vertx: Vertx): TestService = TestServiceImpl(vertx)
+    }
 }
 
 @ExtendWith(VertxExtension::class)
 @Timeout(1, unit = TimeUnit.SECONDS)
 class ServiceTest(private val vertx: Vertx) {
 
-  private val scope: CoroutineScope
-    get() = CoroutineScope(vertx.dispatcher())
+    private val scope: CoroutineScope
+        get() = CoroutineScope(vertx.dispatcher())
 
-  @Test
-  fun `reply is sent`() = runTest {
-    val testService = TestService.create(vertx)
-    TestServiceRequests.getString(vertx)
-      .onEach { (_, reply) -> reply("Hello World") }
-      .launchIn(scope)
+    @Test
+    fun `reply is sent`() = runTest {
+        val testService = TestService.create(vertx)
+        TestServiceRequests.getString(vertx)
+            .onEach { (_, reply) -> reply("Hello World") }
+            .launchIn(scope)
 
-    val message = testService.getString()
+        val message = testService.getString()
 
-    assertEquals("Hello World", message)
-  }
+        assertEquals("Hello World", message)
+    }
 
-  @Test
-  fun `request is sent`() = runTest {
-    val testService = TestService.create(vertx)
-    TestServiceRequests.getResultWithRequest(vertx)
-      .onEach { (request, reply) ->
-        if (request != "Hello World") {
-          reply(TestService.Failure)
-        } else {
-          reply(TestService.Success)
-        }
-      }
-      .launchIn(scope)
+    @Test
+    fun `request is sent`() = runTest {
+        val testService = TestService.create(vertx)
+        TestServiceRequests.getResultWithRequest(vertx)
+            .onEach { (request, reply) ->
+                if (request != "Hello World") {
+                    reply(TestService.Failure)
+                } else {
+                    reply(TestService.Success)
+                }
+            }
+            .launchIn(scope)
 
-    val result = testService.getResultWithRequest("Hello World")
-    assertEquals(TestService.Success, result)
-  }
+        val result = testService.getResultWithRequest("Hello World")
+        assertEquals(TestService.Success, result)
+    }
 
-  @Test
-  fun `suspending one way request is sent`() = runTest {
-    val channel = Channel<List<Int>>()
-    val testService = TestService.create(vertx)
-    TestServiceRequests.callSuspending(vertx)
-      .onEach(channel::send)
-      .launchIn(scope)
+    @Test
+    fun `suspending one way request is sent`() = runTest {
+        val channel = Channel<List<Int>>()
+        val testService = TestService.create(vertx)
+        TestServiceRequests.callSuspending(vertx)
+            .onEach(channel::send)
+            .launchIn(scope)
 
-    val sentNumbers = listOf(1, 2, 3)
-    testService.callSuspending(sentNumbers)
-    val receive = channel.receive()
-    assertEquals(sentNumbers, receive)
-  }
+        val sentNumbers = listOf(1, 2, 3)
+        testService.callSuspending(sentNumbers)
+        val receive = channel.receive()
+        assertEquals(sentNumbers, receive)
+    }
 
-  @Test
-  fun `non suspending one way request is sent`() = runTest {
-    val channel = Channel<Int>()
-    val testService = TestService.create(vertx)
-    TestServiceRequests.call(vertx)
-      .onEach(channel::send)
-      .launchIn(scope)
+    @Test
+    fun `non suspending one way request is sent`() = runTest {
+        val channel = Channel<Int>()
+        val testService = TestService.create(vertx)
+        TestServiceRequests.call(vertx)
+            .onEach(channel::send)
+            .launchIn(scope)
 
-    val sentNumber = 1337
-    testService.call(sentNumber)
-    assertEquals(sentNumber, channel.receive())
-  }
+        val sentNumber = 1337
+        testService.call(sentNumber)
+        assertEquals(sentNumber, channel.receive())
+    }
 
-  private fun runTest(block: suspend CoroutineScope.() -> Unit) {
-    runBlocking(vertx.dispatcher(), block)
-  }
+    private fun runTest(block: suspend CoroutineScope.() -> Unit) {
+        runBlocking(vertx.dispatcher(), block)
+    }
 
-  @BeforeEach
-  fun setup() {
-    vertx.eventBus().unregisterCodec("ebservice")
-    vertx.eventBus().initializeServiceCodec()
-  }
+    @BeforeEach
+    fun setup() {
+        vertx.eventBus().unregisterCodec("ebservice")
+        vertx.eventBus().initializeServiceCodec()
+    }
 }

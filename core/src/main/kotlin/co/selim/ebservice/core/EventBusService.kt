@@ -1,4 +1,4 @@
-package co.selim.ebservice.annotation
+package co.selim.ebservice.core
 
 @Retention(AnnotationRetention.SOURCE)
 @Target(AnnotationTarget.CLASS)
