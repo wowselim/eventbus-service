@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
   implementation "org.jetbrains.kotlin:kotlin-stdlib"
-  implementation "com.google.devtools.ksp:symbol-processing-api:2.3.9"
+  implementation "com.google.devtools.ksp:symbol-processing-api:2.3.11"
   implementation project(':core')
 
   testImplementation "org.junit.platform:junit-platform-launcher:6.1.3"
