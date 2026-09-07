@@ -9,7 +9,7 @@ buildscript {
 }
 
 ext {
-  vertxVersion = "5.1.6"
+  vertxVersion = "5.1.7"
   coroutinesVersion = "1.11.0"
 }
 
